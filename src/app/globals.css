@@ -24,3 +24,6 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+.min-h{
+  min-height: calc(100vh - 64px); 
+}
