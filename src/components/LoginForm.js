@@ -1,29 +1,37 @@
 'use client';
-import React from "react";
+import React, { useEffect } from "react";
 import GifComp from "./GifComp";
-import { LoginData, SignupData } from "@/lang";
-import { useRouter } from 'next/navigation'
+import { LoaderData, LoginData, SignupData } from "@/lang";
+import { useRouter } from 'next/navigation';
 import Socialicon from "./commanComp/Socialicon";
 import { RdirectUrlData } from "@/lang/RdirectUrl";
 import InputField from "./commanComp/InputField";
 import { Formik, Form } from 'formik';
 import { validateLoginForm } from "@/utils/validationSchema";
 import { useDispatch, useSelector } from "react-redux";
-import { loginSuccess } from "@/reudux/slice/authSlice";
-
+import { loginUser } from "@/reudux/slice/authSlice";
+import { toast } from "react-toastify";
 
 const LoginForm = () => {
   const router = useRouter(); // Initialize the router
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state) => state.auth);
-console.log("isAuthenticated-->", isAuthenticated)
-  const handleLogin = (event) => {
-    event.preventDefault();  // Prevent page reload on form submission
-    router.push(RdirectUrlData.Home); // Redirect to the new page (e.g., homepage after login)
-  };
-  if(isAuthenticated){
-    router.push(RdirectUrlData.Home);
-  }
+  const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
+
+  // Redirect to the home page if the user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      toast.success("Login successful! Redirecting...");
+      router.push(RdirectUrlData.Home);// Replace "/home" with your desired route
+    }
+  }, [isAuthenticated, router]);
+
+  // Show error message if login fails
+  useEffect(() => {
+    if (error) {
+      toast.error(error.message);
+    }
+  }, [error]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0d1b2a] to-[#1b263b]">
       <div className="bg-white shadow-lg rounded-lg flex max-w-4xl w-full">
@@ -41,8 +49,7 @@ console.log("isAuthenticated-->", isAuthenticated)
             initialValues={{ email: '', password: '' }}
             validate={validateLoginForm}
             onSubmit={(values) => {
-              dispatch(loginSuccess(values))
-              // alert(JSON.stringify(values, null, 2));
+              dispatch(loginUser(values));
             }}
           >
             {({
@@ -52,11 +59,8 @@ console.log("isAuthenticated-->", isAuthenticated)
               handleChange,
               handleBlur,
               handleSubmit,
-              // isSubmitting,
-              /* and other goodies */
             }) => (
               <Form className="mt-6">
-                {/* {JSON.stringify(values)} */}
                 <div>
                   <InputField
                     label="Email Address"
@@ -83,10 +87,14 @@ console.log("isAuthenticated-->", isAuthenticated)
                   <label className="text-gray-700">Remember me</label>
                 </div>
 
-                <button className="w-full mt-6 mt-4 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg transition duration-300 shadow-md cursor-pointer"
+                <button
                   type="submit"
+                  className={`w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg transition duration-300 shadow-md ${
+                    loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                  }`}
+                  disabled={loading} // Disable button while loading
                 >
-                  LOGIN
+                  {loading ? <GifComp {...LoaderData} /> : "LOGIN" }
                 </button>
               </Form>
             )}
@@ -100,7 +108,6 @@ console.log("isAuthenticated-->", isAuthenticated)
                 <Socialicon {...item} />
               </div>
             ))}
-
           </div>
         </div>
 

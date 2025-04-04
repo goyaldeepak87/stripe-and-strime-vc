@@ -1,14 +1,18 @@
 'use client';
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation'
-import { RdirectUrlData } from '@/lang/RdirectUrl'
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "@/reudux/slice/authSlice";
+import { useRouter } from 'next/navigation';
+import { RdirectUrlData } from '@/lang/RdirectUrl';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '@/reudux/slice/authSlice';
+import { toast } from 'react-toastify';
 
 export default function UserMenu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter(); // Initialize the router
     const dispatch = useDispatch();
+
+    // Correctly access the auth state
+    const {error, user, isAuthenticated } = useSelector((state) => state.auth);
 
     const toggleMenu = () => {
         setIsMenuOpen((prev) => !prev);
@@ -19,7 +23,8 @@ export default function UserMenu() {
     };
 
     const handleSignOut = () => {
-        dispatch(logout({}))
+        dispatch(logout());
+        toast.success("User logged out successfully!");
         router.push(RdirectUrlData.LOGIN); // Redirect to the login page
     };
 
@@ -48,14 +53,13 @@ export default function UserMenu() {
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="user-menu-button"
-                    onClick={() => {
-                        handleSignOut();
-                        closeMenu();
-                    }}
-                    
                 >
                     <button
-                        className="px-4 py-2 text-sm text-gray-700 "
+                        onClick={() => {
+                            handleSignOut();
+                            closeMenu();
+                        }}
+                        className="px-4 py-2 text-sm text-gray-700"
                         role="menuitem"
                         id="user-menu-item-2"
                     >

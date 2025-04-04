@@ -3,34 +3,65 @@ import React from 'react'
 import Image from 'next/image';
 import GifComp from './GifComp';
 // import { Button } from '@/components/ui/button';
+import {loadStripe} from '@stripe/stripe-js';
 
 export default function CardCompUI(values) {
-    console.log("CardCompUI",values)
+    console.log("CardCompUI", values)
+
+    const makePayment = async(e) => {
+        console.log("Make Payment", values)
+        const cardData = {
+            id: e.id,
+            title: e.title,
+            price: e.price,
+            active: e.active,
+            prodectId: e.prodectId,
+        }
+
+        console.log("CardData", cardData)
+        // // values.preventDefault();
+        // console.log("Clicked",process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, process.env.NEXT_PUBLIC_BASE_URL, values)
+        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+        const response = await fetch(`http://localhost:8003/v1/user/api/checkout_sessions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cardData),
+        });
+
+        const session = await response.json();
+        console.log("Session", session)
+        const result = await stripe.redirectToCheckout({
+            sessionId: session.id,
+        });
+        console.log("Result", result)
+        if (result.error) {
+            console.log("Error", result.error.message);
+        }
+    }
+
     return (
         <div>
             <div className="flex items-center justify-center min-h bg-orange-200">
-                <div className="relative w-64 p-6 bg-white rounded-2xl shadow-lg text-center">
-                    <div className= {`absolute -top-${values?.topShift} left-${values?.leftShift} transform -translate-x-1/2 w-32 h-20`}
-                    style={{
-                        top: `-${values?.topShiftIline}px`,
-                        left: `${values?.lftShiftIline}px`,
-                      }}
+                <div className="relative w-73 p-6 bg-white rounded-2xl shadow-lg text-center">
+                    <div className={`absolute -top-${values?.topShift} left-${values?.leftShift} transform -translate-x-1/2 w-32 h-20`}
+                        style={{
+                            top: `-${values?.topShiftIline}px`,
+                            left: `${values?.lftShiftIline}px`,
+                        }}
                     >
-                        <GifComp animation={values.animation}/>
+                        <GifComp animation={values.animation} />
                     </div>
-                    <h2 className="mt-12 text-lg font-semibold">Product Name</h2>
+                    <h2 className="mt-12 text-lg font-semibold">{values.title}</h2>
                     <p className="text-gray-500 text-sm mt-2">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tenetur doloremque adipisci quaerat.
+                        {values.text}
                     </p>
-                    <p className="text-2xl font-bold mt-4">$12</p>
-                    {/* <Button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white w-full py-2 rounded-lg">
-          Add to Cart
-        </Button> */}
+                    <p className="text-2xl font-bold mt-4">{values.price}</p>
                     <button
-                        //   onClick={onClick}
-                        className="mt-4 bg-orange-500 hover:bg-orange-600 text-white w-full py-2 rounded-lg transition duration-300 shadow-md"
+                        onClick={()=>makePayment(values)}
+                        disabled={values.active}
+                        className={`mt-4 ${!values.active ? "cursor-pointer" : "cursor-no-drop"} ${!values.active ? "bg-orange-500" : "bg-customOrange"} hover:bg-orange-600 text-white w-full py-2 rounded-lg transition duration-300 shadow-md`}
                     >
-                        {/* {children} */}Add to Cart
+                        {!values.active ? "Add to Cart" : "Not Available"}
                     </button>
                 </div>
             </div>
