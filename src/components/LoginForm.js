@@ -8,15 +8,22 @@ import { RdirectUrlData } from "@/lang/RdirectUrl";
 import InputField from "./commanComp/InputField";
 import { Formik, Form } from 'formik';
 import { validateLoginForm } from "@/utils/validationSchema";
+import { useDispatch, useSelector } from "react-redux";
+import { loginSuccess } from "@/reudux/slice/authSlice";
 
 
 const LoginForm = () => {
   const router = useRouter(); // Initialize the router
-
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+console.log("isAuthenticated-->", isAuthenticated)
   const handleLogin = (event) => {
     event.preventDefault();  // Prevent page reload on form submission
     router.push(RdirectUrlData.Home); // Redirect to the new page (e.g., homepage after login)
   };
+  if(isAuthenticated){
+    router.push(RdirectUrlData.Home);
+  }
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0d1b2a] to-[#1b263b]">
       <div className="bg-white shadow-lg rounded-lg flex max-w-4xl w-full">
@@ -34,7 +41,8 @@ const LoginForm = () => {
             initialValues={{ email: '', password: '' }}
             validate={validateLoginForm}
             onSubmit={(values) => {
-              alert(JSON.stringify(values, null, 2));
+              dispatch(loginSuccess(values))
+              // alert(JSON.stringify(values, null, 2));
             }}
           >
             {({
@@ -48,7 +56,7 @@ const LoginForm = () => {
               /* and other goodies */
             }) => (
               <Form className="mt-6">
-                {JSON.stringify(values)}
+                {/* {JSON.stringify(values)} */}
                 <div>
                   <InputField
                     label="Email Address"

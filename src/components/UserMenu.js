@@ -2,10 +2,13 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation'
 import { RdirectUrlData } from '@/lang/RdirectUrl'
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "@/reudux/slice/authSlice";
 
 export default function UserMenu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter(); // Initialize the router
+    const dispatch = useDispatch();
 
     const toggleMenu = () => {
         setIsMenuOpen((prev) => !prev);
@@ -16,6 +19,7 @@ export default function UserMenu() {
     };
 
     const handleSignOut = () => {
+        dispatch(logout({}))
         router.push(RdirectUrlData.LOGIN); // Redirect to the login page
     };
 
@@ -40,7 +44,7 @@ export default function UserMenu() {
             {/* Dropdown Menu */}
             {isMenuOpen && (
                 <div
-                    className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-black/5 cursor-pointer"
+                    className="absolute hover:bg-gray-100 right-0 z-10 mt-2 w-30 origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-black/5 cursor-pointer"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="user-menu-button"
@@ -48,9 +52,10 @@ export default function UserMenu() {
                         handleSignOut();
                         closeMenu();
                     }}
+                    
                 >
                     <button
-                        className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="px-4 py-2 text-sm text-gray-700 "
                         role="menuitem"
                         id="user-menu-item-2"
                     >
