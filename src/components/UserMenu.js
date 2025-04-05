@@ -12,7 +12,7 @@ export default function UserMenu() {
     const dispatch = useDispatch();
 
     // Correctly access the auth state
-    const {error, user, isAuthenticated } = useSelector((state) => state.auth);
+    const { error, user, isAuthenticated } = useSelector((state) => state.auth);
 
     const toggleMenu = () => {
         setIsMenuOpen((prev) => !prev);
@@ -54,17 +54,32 @@ export default function UserMenu() {
                     aria-orientation="vertical"
                     aria-labelledby="user-menu-button"
                 >
-                    <button
-                        onClick={() => {
-                            handleSignOut();
-                            closeMenu();
-                        }}
-                        className="px-4 py-2 text-sm text-gray-700"
-                        role="menuitem"
-                        id="user-menu-item-2"
-                    >
-                        Sign out
-                    </button>
+                    {isAuthenticated ? (
+                        <button
+                            onClick={() => {
+                                handleSignOut();
+                                closeMenu();
+                            }}
+                            className="px-4 py-2 text-sm text-gray-700"
+                            role="menuitem"
+                            id="user-menu-item-2"
+                        >
+                            Sign Out
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => {
+                                router.push(RdirectUrlData.LOGIN);
+                                closeMenu();
+                            }}
+                            className="px-4 py-2 text-sm text-gray-700"
+                            role="menuitem"
+                            id="user-menu-item-2"
+                        >
+                            Login
+                        </button>
+                    )}
+
                 </div>
             )}
         </div>

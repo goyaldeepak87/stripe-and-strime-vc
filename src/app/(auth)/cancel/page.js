@@ -1,10 +1,10 @@
-import LoginPage from '@/components/LoginPage'
+import LoginForm from '@/components/LoginPage'
 import React from 'react'
 
 export default function page() {
   return (
     <div>
-      <LoginPage/>
+      Payment Cancelled
     </div>
   )
 }

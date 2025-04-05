@@ -3,6 +3,8 @@ import animationData2 from '@/components/images/Animation2.json';
 import animationData3 from '@/components/images/Animation3.json';
 import animationData4 from '@/components/images/Animation4.json';
 import loader from '@/components/images/Loader.json';
+import success from '@/components/images/success.json';
+import videocall from '@/components/images/videocall.json';
 
 export const animations = [
     {
@@ -70,11 +72,26 @@ export const LoginData = {
     }
 }
 
+export const successPayment = {
+    animation: {
+        img: success,
+        width: 330,
+        height: 330,
+    }
+}
 export const LoaderData = {
     animation: {
         img: loader,
         width: 110,
         height: 24,
+    }
+}
+
+export const VideocallData = {
+    animation: {
+        img: videocall,
+        width: 150,
+        height: 130,
     }
 }
 

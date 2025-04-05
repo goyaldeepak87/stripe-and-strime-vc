@@ -1,14 +1,17 @@
 'use client';
-import React from 'react'
+import React, { use, useState } from 'react'
 import Image from 'next/image';
 import GifComp from './GifComp';
 // import { Button } from '@/components/ui/button';
-import {loadStripe} from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import { useSelector } from 'react-redux';
+import LoginFormModel from './auth/LoginFormModel';
 
-export default function CardCompUI(values) {
-    console.log("CardCompUI", values)
+export default function CardCompUI({setUserLogin, ...values}) {
+    const { isAuthenticated } = useSelector((state) => state.auth);
+    
 
-    const makePayment = async(e) => {
+    const makePayment = async (e) => {
         console.log("Make Payment", values)
         const cardData = {
             id: e.id,
@@ -57,7 +60,9 @@ export default function CardCompUI(values) {
                     </p>
                     <p className="text-2xl font-bold mt-4">{values.price}</p>
                     <button
-                        onClick={()=>makePayment(values)}
+                        onClick={() =>
+                        (isAuthenticated ? makePayment(values) : setUserLogin(true)
+                        )}
                         disabled={values.active}
                         className={`mt-4 ${!values.active ? "cursor-pointer" : "cursor-no-drop"} ${!values.active ? "bg-orange-500" : "bg-customOrange"} hover:bg-orange-600 text-white w-full py-2 rounded-lg transition duration-300 shadow-md`}
                     >

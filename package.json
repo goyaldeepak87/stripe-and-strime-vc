@@ -17,6 +17,7 @@
     "next": "15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-feather": "^2.0.10",
     "react-lottie": "^1.2.10",
     "react-query": "^3.39.3",
     "react-redux": "^9.2.0",
