@@ -8,12 +8,14 @@ import { useSelector } from 'react-redux';
 import LoginFormModel from './auth/LoginFormModel';
 
 export default function CardCompUI({setUserLogin, ...values}) {
-    const { isAuthenticated } = useSelector((state) => state.auth);
-    
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
+    const uuId = user?.data?.result?.user?.guestUser?.uuid
+    console.log("User==>", )
 
     const makePayment = async (e) => {
         console.log("Make Payment", values)
         const cardData = {
+            uuid: uuId,
             id: e.id,
             title: e.title,
             price: e.price,
@@ -58,7 +60,7 @@ export default function CardCompUI({setUserLogin, ...values}) {
                     <p className="text-gray-500 text-sm mt-2">
                         {values.text}
                     </p>
-                    <p className="text-2xl font-bold mt-4">{values.price}</p>
+                    <p className="text-2xl font-bold mt-4">${values.price}</p>
                     <button
                         onClick={() =>
                         (isAuthenticated ? makePayment(values) : setUserLogin(true)

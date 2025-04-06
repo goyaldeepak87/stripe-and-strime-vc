@@ -10,10 +10,10 @@ import GifComp from '../GifComp';
 
 export default function LoginFormModel(props) {
       const dispatch = useDispatch();
-      const { loading } = useSelector((state) => state.auth);
+      const { loading, isAuthenticated } = useSelector((state) => state.auth);
     return (
         <>
-            <div className={`${props.with ? props.with : "w-1/2"} relative p-10`}>
+            <div className={`${props?.with ? props.with : "w-1/2"} relative p-10`}>
             {props.with ? <div className='absolute right-[17px] top-[14px] text-[22px] font-black cursor-pointer' onClick={()=>props.setUserLogin(false)}>X</div>:""}
                 <h2 className="text-2xl font-bold text-gray-900">Login</h2>
                 <p className="text-gray-500">
@@ -28,6 +28,7 @@ export default function LoginFormModel(props) {
                     validate={validateLoginForm}
                     onSubmit={(values) => {
                         dispatch(loginUser(values));
+                        // props.setUserLogin(false)
                     }}
                 >
                     {({
