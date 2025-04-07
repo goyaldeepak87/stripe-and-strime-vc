@@ -9,7 +9,8 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await axios.post('http://localhost:8003/v1/auth/guest-user/login', credentials); // Replace with your API endpoint
       // const response = await axios.post('/api/login', credentials); // Replace with your API endpoint
-      console.log('Login response:', response.data); // Log the response for debugging
+      console.log('Login response:', response.data.data.result.token.access.token); // Log the response for debugging
+      localStorage.setItem('token', response.data.data.result.token.access.token); // Store token in local storage
       return response.data; // Return user data if login is successful
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Login failed'); // Handle errors
@@ -30,6 +31,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.loading = false;
+      localStorage.removeItem('token'); // Remove token from local storage on logout
     },
   },
   extraReducers: (builder) => {

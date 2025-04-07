@@ -8,31 +8,25 @@
 import UserList from '@/components/commanComp/UserList'
 import UserProfileModel from '@/components/commanComp/UserProfileModel'
 import NaveBar from '@/components/NaveBar'
-import axios from 'axios'
-import React, { useEffect } from 'react'
+import { getUserProfile } from '@/utils/APIs'
+import React, { useEffect, useState } from 'react'
 
 export default function page() {
-
- 
+  const [UserListData, setUserListData] = useState([]);
   const fetchUserProfile = async () => {
-    try {
-      const response = await axios.get('http://localhost:8003/v1/user/api/profile', {
-        headers: { 'Content-Type': 'application/json' },
+    getUserProfile()
+      .then((response) => {
+        console.log("User Profile:", response.data.result);
+        setUserListData(response.data.result);
+      })
+      .catch((error) => {
+        console.error("Error fetching user profile:", error);
       });
-      console.log("Response", response.data); // Log the response data
-      return response.data; // Return the data for further use
-    } catch (error) {
-      console.error("Error fetching user profile:", error.message);
-      // Handle the error appropriately (e.g., show a toast notification or set an error state)
-    }
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const userProfile = await fetchUserProfile();
-      console.log("User Profile", userProfile); // Log the fetched user profile
-    };
-    fetchData();
+    // Fetch user profile when the component mounts
+    fetchUserProfile();
   }, []); // Empty dependency array to run once on component mount
 
   return (
@@ -42,22 +36,20 @@ export default function page() {
         <div className='text-2xl font-bold mt-10'>
           Pocket Live Calls User
         </div>
-        <div className='mt-10'>
-          <div className="flex h-[calc(100vh-176px)]">
-            <div className='w-1/3 h-full overflow-y-auto pb-6 pl-6 border border-gray-500'>
-              <UserList />
-              <UserList />
-              <UserList />
-              <UserList />
-              <UserList />
-              <UserList />
-              <UserList />
-            </div>
-            <div className='w-1/2 ml-10' style={{ width: "63.5%" }}>
-              <UserProfileModel />
+        {UserListData?.AllUserList?.length > 0 && (
+          <div className='mt-10'>
+            <div className="flex h-[calc(100vh-176px)]">
+              <div className='w-1/3 h-full overflow-y-auto pb-6 border border-gray-500'>
+                {UserListData?.AllUserList?.map((user, index) => (
+                  <UserList key={index} {...user} />
+                ))}
+              </div>
+              <div className='w-1/2 ml-10' style={{ width: "63.5%" }}>
+                <UserProfileModel />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

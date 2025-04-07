@@ -3,6 +3,7 @@
 import GifComp from '@/components/GifComp'
 import LoginForm from '@/components/LoginPage'
 import { successPayment } from '@/lang'
+import { getpaymentSuccess } from '@/utils/APIs'
 import axios from 'axios'
 import { useSearchParams, useParams } from 'next/navigation'
 import React, { useEffect } from 'react'
@@ -10,22 +11,30 @@ import React, { useEffect } from 'react'
 export default function page() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id');
+
+  (function () {
+    setTimeout(() => {
+      window.location.href = "/"
+    }, 2000)
+  })();
   
-  const checkPaymentSuccess = async() =>{
-    const result = await axios.get(`http://localhost:8003/v1/user/api/payment_success?session_id=${sessionId}`,)
-    console.log("dtaa==>", result)
+  const checkPaymentSuccess = async () => {
+    const result = await getpaymentSuccess({ sessionId })
+      .then((response) => {
+        console.log("sessionId==>", sessionId)
+        // console.log("dtaa==>", result)
+        // console.log("User Profile:", response.data.result);
+      })
+      .catch((error) => {
+        console.error("Error fetching user profile:", error);
+      });
   }
-  // (function () {
-  //   setTimeout(() => {
-  //     window.location.href = "/"
-  //   }, 2000)
-  // })();
-  useEffect(()=>{
+  useEffect(() => {
     checkPaymentSuccess()
-  },[sessionId])
+  }, [sessionId])
   return (
     <div className='flex min-h-screen items-center justify-center'>
-      <GifComp {...successPayment}/>
+      <GifComp {...successPayment} />
     </div>
   )
 }

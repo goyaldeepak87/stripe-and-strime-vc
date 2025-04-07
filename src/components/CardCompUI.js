@@ -6,43 +6,78 @@ import GifComp from './GifComp';
 import { loadStripe } from '@stripe/stripe-js';
 import { useSelector } from 'react-redux';
 import LoginFormModel from './auth/LoginFormModel';
+import { productPayment } from '@/utils/APIs';
 
-export default function CardCompUI({setUserLogin, ...values}) {
+export default function CardCompUI({ setUserLogin, ...values }) {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
     const uuId = user?.data?.result?.user?.guestUser?.uuid
-    console.log("User==>", )
+    console.log("User==>",)
+
+    // const makePayment = async (e) => {
+    //     console.log("Make Payment", values)
+    //     const cardData = {
+    //         uuid: uuId,
+    //         id: e.id,
+    //         title: e.title,
+    //         price: e.price,
+    //         active: e.active,
+    //         prodectId: e.prodectId,
+    //     }
+
+    //     console.log("CardData", cardData)
+    //     // // values.preventDefault();
+    //     // console.log("Clicked",process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, process.env.NEXT_PUBLIC_BASE_URL, values)
+    //     const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+    //     const response = await fetch(`http://localhost:8003/v1/user/api/checkout_sessions`, {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify(cardData),
+    //     });
+
+    //     const session = await response.json();
+    //     console.log("Session", session)
+    //     const result = await stripe.redirectToCheckout({
+    //         sessionId: session.id,
+    //     });
+    //     console.log("Result", result)
+    //     if (result.error) {
+    //         console.log("Error", result.error.message);
+    //     }
+    // }
 
     const makePayment = async (e) => {
-        console.log("Make Payment", values)
-        const cardData = {
-            uuid: uuId,
-            id: e.id,
-            title: e.title,
-            price: e.price,
-            active: e.active,
-            prodectId: e.prodectId,
-        }
+        try {
+            console.log("Make Payment", values);
 
-        console.log("CardData", cardData)
-        // // values.preventDefault();
-        // console.log("Clicked",process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, process.env.NEXT_PUBLIC_BASE_URL, values)
-        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-        const response = await fetch(`http://localhost:8003/v1/user/api/checkout_sessions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(cardData),
-        });
+            const cardData = {
+                uuid: uuId,
+                id: e.id,
+                title: e.title,
+                price: e.price,
+                active: e.active,
+                prodectId: e.prodectId,
+            };
 
-        const session = await response.json();
-        console.log("Session", session)
-        const result = await stripe.redirectToCheckout({
-            sessionId: session.id,
-        });
-        console.log("Result", result)
-        if (result.error) {
-            console.log("Error", result.error.message);
+            console.log("CardData", cardData);
+
+            const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
+            // Call the productPayment API
+            const session = await productPayment(cardData);
+            console.log("Session", session);
+
+            // Redirect to Stripe Checkout
+            const result = await stripe.redirectToCheckout({
+                sessionId: session.id,
+            });
+
+            if (result.error) {
+                console.error("Stripe Checkout Error:", result.error.message);
+            }
+        } catch (error) {
+            console.error("Error during payment process:", error.message);
         }
-    }
+    };
 
     return (
         <div>

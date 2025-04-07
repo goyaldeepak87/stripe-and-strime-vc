@@ -16,7 +16,7 @@ const LoginForm = () => {
   useEffect(() => {
     if (isAuthenticated) {
       toast.success("Login successful! Redirecting...");
-      // router.push(RdirectUrlData.Home);// Replace "/home" with your desired route
+      router.push(RdirectUrlData.Home);// Replace "/home" with your desired route
     }
   }, [isAuthenticated, router]);
 
