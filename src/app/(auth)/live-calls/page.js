@@ -13,22 +13,28 @@ import React, { useEffect, useState } from 'react'
 
 export default function page() {
   const [UserListData, setUserListData] = useState([]);
+  const [selectedUser, setSelectedUser] = useState([]); // State to hold the selected user
+  // console.log("User Profile Model Data:", props);
+  //   const email = props?.email;
+  //   const userName = email?.split("@")?.[0].charAt(0)?.toUpperCase() + email?.split("@")?.[0]?.slice(1)
   const fetchUserProfile = async () => {
     getUserProfile()
       .then((response) => {
         console.log("User Profile:", response.data.result);
         setUserListData(response.data.result);
+        setSelectedUser(response.data.result.AllUserList[0]); // Set the first user as selected by default
       })
       .catch((error) => {
         console.error("Error fetching user profile:", error);
       });
   };
 
+  console.log("UserListData:", selectedUser);
   useEffect(() => {
     // Fetch user profile when the component mounts
     fetchUserProfile();
   }, []); // Empty dependency array to run once on component mount
-
+  console.log("UserListData:", );
   return (
     <div>
       <NaveBar />
@@ -41,11 +47,18 @@ export default function page() {
             <div className="flex h-[calc(100vh-176px)]">
               <div className='w-1/3 h-full overflow-y-auto pb-6 border border-gray-500'>
                 {UserListData?.AllUserList?.map((user, index) => (
-                  <UserList key={index} {...user} />
+                  <div className='cursor-pointer' key={index}
+                    onClick={() => {
+                      console.log("User clicked:", user);
+                      setSelectedUser(user); // Set the selected user
+                    }}
+                  >
+                    <UserList {...user} />
+                  </div>
                 ))}
               </div>
               <div className='w-1/2 ml-10' style={{ width: "63.5%" }}>
-                <UserProfileModel />
+                <UserProfileModel {...selectedUser}/>
               </div>
             </div>
           </div>

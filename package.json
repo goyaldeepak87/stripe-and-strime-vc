@@ -12,6 +12,8 @@
     "@lottiefiles/dotlottie-react": "^0.13.3",
     "@reduxjs/toolkit": "^2.6.1",
     "@stripe/stripe-js": "^7.0.0",
+    "agora-rtc-react": "^2.4.0",
+    "agora-rtc-sdk-ng": "^4.23.2",
     "axios": "^1.8.4",
     "formik": "^2.4.6",
     "next": "15.2.4",
@@ -22,7 +24,8 @@
     "react-query": "^3.39.3",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
-    "redux-persist": "^6.0.0"
+    "redux-persist": "^6.0.0",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

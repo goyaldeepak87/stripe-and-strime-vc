@@ -2,7 +2,21 @@ import React from 'react'
 import GifComp from '../GifComp'
 import { VideocallData } from '@/lang'
 
-export default function UserProfileModel() {
+export default function UserProfileModel(props) {
+    console.log("User Profile Model Data:", props);
+    const [isCalling, setIsCalling] = useState(false);
+    const [roomId, setRoomId] = useState('');
+
+    const email = props?.email;
+    const userName = email
+        ? email.split("@")[0].charAt(0).toUpperCase() + email.split("@")[0].slice(1)
+        : "Guest User";
+
+    const handleVideoCall = () => {
+        const newRoomId = 'testRoom'; // Generate a unique room ID
+        setRoomId(newRoomId);
+        setIsCalling(true); 
+    };
     return (
         <>
             <div className='flex items-center'>
@@ -13,12 +27,18 @@ export default function UserProfileModel() {
                 />
                 <div className='ml-8 flex items-center justify-between w-full'>
                     <div>
-                        <div className='text-2xl font-bold mt-2'>Guest User</div>
+                        <div className='text-2xl font-bold mt-2'>{userName}</div>
                         <div className='text-sm text-gray-500'>Phone - +1 234 567 890</div>
-                        <div className='text-sm text-gray-500'>E-mail - guestuser@gmail.com</div>
+                        <div className='text-sm text-gray-500'>E-mail - {email}</div>
                         <div className='text-sm text-gray-500'>Adress - 123 Main Street, Springfield, IL 62704, USA</div>
                     </div>
-                    <div className='cursor-pointer'>
+                    <div className='cursor-pointer'
+                        onClick={() => {
+                            console.log("Video Call clicked:", props);
+                            onClick = { handleVideoCall }
+                            // setSelectedUser(user); // Set the selected user
+                        }}
+                    >
                         <GifComp {...VideocallData} />
                     </div>
                 </div>
