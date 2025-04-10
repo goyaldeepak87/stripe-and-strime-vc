@@ -1,83 +1,72 @@
+// app/components/Chat.js
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import ReactionButton from "./ReactionButton";
+import { FaPaperPlane } from "react-icons/fa";
 
-export default function Chat({ messages, sendMessage, sendReaction }) {
-  const [newMessage, setNewMessage] = useState("");
+export default function Chat({ messages, username, onSendMessage }) {
+  const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
-  
-  const handleSubmit = (e) => {
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSendMessage = (e) => {
     e.preventDefault();
-    if (newMessage.trim()) {
-      sendMessage(newMessage);
-      setNewMessage("");
+    if (message.trim()) {
+      onSendMessage(message);
+      setMessage("");
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="font-semibold text-lg">Live Chat</h2>
+      <div className="p-3 border-b border-gray-700 bg-gray-800">
+        <h2 className="font-semibold text-white">Comments</h2>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
-          <p className="text-gray-500 text-center">No messages yet</p>
-        ) : (
-          messages.map((msg, index) => (
-            <div key={index} className="flex flex-col">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">
-                    {msg.username.substring(0, 2).toUpperCase()}
-                  </span>
-                </div>
-                <div className="ml-2">
-                  <p className="text-sm font-semibold">
-                    {msg.username}
-                    <span className="text-xs font-normal text-gray-500 ml-2">
-                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </p>
-                  <p className="text-sm mt-1">{msg.text}</p>
-                </div>
-              </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.map((msg) => (
+          <div key={msg.id} className="flex items-start space-x-2">
+            <div className="flex-shrink-0 bg-gray-700 text-white rounded-full w-8 h-8 flex items-center justify-center">
+              {msg.username.substring(0, 1).toUpperCase()}
             </div>
-          ))
-        )}
+            <div className="flex-1">
+              <div className="flex items-baseline space-x-2">
+                <span className="font-medium text-white">{msg.username}</span>
+                <span className="text-xs text-gray-400">
+                  {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+              </div>
+              <div className="text-white break-words">{msg.text}</div>
+            </div>
+          </div>
+        ))}
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex space-x-2 mb-2">
-          <ReactionButton emoji="❤️" onClick={() => sendReaction("heart")} />
-          <ReactionButton emoji="👍" onClick={() => sendReaction("like")} />
-          <ReactionButton emoji="😂" onClick={() => sendReaction("laugh")} />
-          <ReactionButton emoji="👏" onClick={() => sendReaction("clap")} />
-        </div>
-        
-        <form onSubmit={handleSubmit} className="flex">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700"
-          >
-            Send
-          </button>
-        </form>
-      </div>
+      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-700 bg-gray-800 flex gap-2">
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Add a comment..."
+          className="flex-1 bg-gray-700 text-white rounded-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button 
+          type="submit"
+          disabled={!message.trim()}
+          className="bg-blue-500 text-white rounded-full p-2 disabled:opacity-50"
+        >
+          <FaPaperPlane />
+        </button>
+      </form>
     </div>
   );
 }

@@ -1,80 +1,122 @@
+// app/page.js
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaVideo, FaUsers } from "react-icons/fa";
+import { FaVideo, FaEye } from "react-icons/fa";
 
 export default function Home() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [roomId, setRoomId] = useState("");
-  const [role, setRole] = useState("audience");
+  const [isCreating, setIsCreating] = useState(false);
 
-  const createRoom = () => {
-    // Generate a random room ID if one isn't provided
-    const generatedRoomId = roomId || Math.random().toString(36).substring(2, 9);
-    router.push(`/room/${generatedRoomId}?role=host`);
+  const handleJoin = () => {
+    if (!username.trim()) {
+      return alert("Please enter your name");
+    }
+    
+    if (!roomId.trim()) {
+      return alert("Please enter a room ID");
+    }
+    
+    // Store username in localStorage
+    localStorage.setItem("username", username);
+    
+    // Navigate to room as audience
+    router.push(`/room/${roomId}?role=audience`);
   };
 
-  const joinRoom = () => {
-    if (!roomId) {
-      alert("Please enter a Room ID to join");
-      return;
+  const handleCreateRoom = () => {
+    if (!username.trim()) {
+      return alert("Please enter your name");
     }
-    router.push(`/room/${roomId}?role=${role}`);
+    
+    // Generate a random room ID if not provided
+    const newRoomId = roomId.trim() || Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    // Store username in localStorage
+    localStorage.setItem("username", username);
+    
+    // Navigate to room as host
+    router.push(`/room/${newRoomId}?role=host`);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-6 space-y-6">
-        <h1 className="text-2xl font-bold text-center text-gray-800">Live Streaming App</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h1 className="text-2xl font-bold text-center mb-6">Live Stream App</h1>
         
         <div className="space-y-4">
           <div>
-            <label htmlFor="roomId" className="block text-sm font-medium text-gray-700">
-              Room ID
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
             <input
               type="text"
-              id="roomId"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Enter Room ID (optional for create)"
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full p-3 border border-gray-300 rounded-lg"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
           
-          <div className="flex justify-between gap-4">
-            <button
-              onClick={createRoom}
-              className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 w-1/2"
-            >
-              <FaVideo className="mr-2" />
-              Create Room
-            </button>
-            
-            <button
-              onClick={joinRoom}
-              className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 w-1/2"
-            >
-              <FaUsers className="mr-2" />
-              Join Room
-            </button>
-          </div>
-          
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-              Join as
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
-            >
-              <option value="audience">Audience</option>
-              <option value="cohost">Co-Host</option>
-            </select>
-          </div>
+          {isCreating ? (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Room ID (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="Leave empty for random ID"
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                  value={roomId}
+                  onChange={(e) => setRoomId(e.target.value)}
+                />
+                <p className="text-xs text-gray-500 mt-1">If left empty, a random room ID will be generated</p>
+              </div>
+              
+              <button
+                onClick={handleCreateRoom}
+                className="w-full bg-blue-500 text-white p-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600 transition"
+              >
+                <FaVideo />
+                <span>Go Live</span>
+              </button>
+              
+              <button
+                onClick={() => setIsCreating(false)}
+                className="w-full text-gray-600 p-2 hover:underline"
+              >
+                Join a live stream instead
+              </button>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Room ID</label>
+                <input
+                  type="text"
+                  placeholder="Enter Room ID"
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                  value={roomId}
+                  onChange={(e) => setRoomId(e.target.value)}
+                />
+              </div>
+              
+              <button
+                onClick={handleJoin}
+                className="w-full bg-blue-500 text-white p-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600 transition"
+              >
+                <FaEye />
+                <span>Join Stream</span>
+              </button>
+              
+              <button
+                onClick={() => setIsCreating(true)}
+                className="w-full text-gray-600 p-2 hover:underline"
+              >
+                Create your own live stream
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

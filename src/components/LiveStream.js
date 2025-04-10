@@ -1,171 +1,169 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AgoraRTC from "agora-rtc-sdk-ng";
-import { 
-  AgoraRTCProvider, 
-  useLocalCameraTrack, 
-  useLocalMicrophoneTrack, 
-  usePublish, 
-  useJoin, 
-  useRemoteUsers, 
-  RemoteUser, 
-  LocalUser 
-} from "agora-rtc-react";
+import {
+  FaMicrophone,
+  FaMicrophoneSlash,
+  FaVideo,
+  FaVideoSlash
+} from "react-icons/fa";
 
-// Wrapper component to provide AgoraRTC context
-const LiveStream = ({ appId, channel, token, uid, role }) => {
-  // Create Agora RTC client - IMPORTANT: Set mode to "live" instead of "rtc"
-  const [client] = useState(() => 
-    AgoraRTC.createClient({ 
-      mode: "live", // Using "live" mode which supports client roles
-      codec: "vp8"
-    })
-  );
+// Agora client instance
+const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
 
-  return (
-    <AgoraRTCProvider client={client}>
-      <LiveStreamContent 
-        appId={appId} 
-        channel={channel} 
-        token={token} 
-        uid={uid} 
-        role={role} 
-        client={client} // Pass client to inner component
-      />
-    </AgoraRTCProvider>
-  );
-};
+export default function LiveStream({ roomId, token, userId, role, username }) {
+  const [localAudioTrack, setLocalAudioTrack] = useState(null);
+  const [localVideoTrack, setLocalVideoTrack] = useState(null);
+  const [remoteUsers, setRemoteUsers] = useState([]);
+  const [micOn, setMicOn] = useState(true);
+  const [cameraOn, setCameraOn] = useState(true);
+  const [joined, setJoined] = useState(false);
 
-// Inner component that uses the Agora hooks
-const LiveStreamContent = ({ appId, channel, token, uid, role, client }) => {
-  const [isActive, setIsActive] = useState(false);
-  const [micOn, setMicOn] = useState(role !== "audience");
-  const [cameraOn, setCameraOn] = useState(role !== "audience");
-  
-  // Set client role based on user role
   useEffect(() => {
-    const setClientRole = async () => {
+    if (!token) return;
+
+    const join = async () => {
       try {
-        // Use the passed client instance instead of creating a new one
-        if (role === "audience") {
-          await client.setClientRole("audience");
-        } else {
-          await client.setClientRole("host");
+        // Set role (host or audience)
+        await client.setClientRole(role);
+
+        // Join channel
+        await client.join(
+          process.env.NEXT_PUBLIC_AGORA_APP_ID,
+          roomId,
+          token,
+          userId
+        );
+
+        setJoined(true);
+
+        // If host, create and publish tracks
+        if (role === "host") {
+          const [micTrack, camTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+          setLocalAudioTrack(micTrack);
+          setLocalVideoTrack(camTrack);
+
+          await client.publish([micTrack, camTrack]);
         }
-        console.log(`Client role set to: ${role === "audience" ? "audience" : "host"}`);
-      } catch (error) {
-        console.error("Error setting client role:", error);
+      } catch (err) {
+        console.error("Join error:", err);
       }
     };
-    
-    if (client && client.connectionState !== "DISCONNECTED") {
-      setClientRole();
-    }
-  }, [role, client]);
-  
-  // Join the channel
-  useJoin(
-    { 
-      appid: appId, 
-      channel: channel, 
-      token: token || null, 
-      uid: uid 
-    }, 
-    isActive && token !== null
-  );
 
-  // Get local media tracks based on role
-  const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn && role !== "audience");
-  const { localCameraTrack } = useLocalCameraTrack(cameraOn && role !== "audience");
-  
-  // Publish local tracks if user is a host or co-host
-  usePublish([localMicrophoneTrack, localCameraTrack]);
-  
-  // Get remote users in the channel
-  const remoteUsers = useRemoteUsers();
+    // Remote user published
+    client.on("user-published", async (user, mediaType) => {
+      await client.subscribe(user, mediaType);
 
-  // Once we have a token, activate the connection
+      if (mediaType === "video") {
+        setRemoteUsers((prev) => {
+          if (!prev.find((u) => u.uid === user.uid)) {
+            return [...prev, user];
+          }
+          return prev;
+        });
+      }
+
+      if (mediaType === "audio") {
+        user.audioTrack?.play();
+      }
+    });
+
+    // Handle unpublish/leave
+    client.on("user-unpublished", (user, type) => {
+      setRemoteUsers((prev) => prev.filter((u) => u.uid !== user.uid));
+    });
+
+    client.on("user-left", (user) => {
+      setRemoteUsers((prev) => prev.filter((u) => u.uid !== user.uid));
+    });
+
+    join();
+
+    return () => {
+      if (localAudioTrack) localAudioTrack.close();
+      if (localVideoTrack) localVideoTrack.close();
+      client.removeAllListeners();
+      if (joined) client.leave();
+    };
+  }, [token, roomId, userId, role]);
+
+  // Play local video for host
   useEffect(() => {
-    if (token) {
-      setIsActive(true);
+    if (role === "host" && localVideoTrack) {
+      localVideoTrack.play("local-player");
     }
-  }, [token]);
+  }, [localVideoTrack, role]);
 
-  const toggleMic = () => {
-    if (role === "audience") return;
-    setMicOn(!micOn);
+  // Play remote video for audience
+  useEffect(() => {
+    if (role === "audience") {
+      remoteUsers.forEach((user) => {
+        user.videoTrack?.play(`remote-player-${user.uid}`);
+      });
+    }
+
+    return () => {
+      remoteUsers.forEach((user) => {
+        user.videoTrack?.stop();
+      });
+    };
+  }, [remoteUsers, role]);
+
+  const toggleMic = async () => {
+    if (localAudioTrack) {
+      await localAudioTrack.setEnabled(!micOn);
+      setMicOn(!micOn);
+    }
   };
 
-  const toggleCamera = () => {
-    if (role === "audience") return;
-    setCameraOn(!cameraOn);
+  const toggleCamera = async () => {
+    if (localVideoTrack) {
+      await localVideoTrack.setEnabled(!cameraOn);
+      setCameraOn(!cameraOn);
+    }
   };
 
   return (
-    <div className="w-full h-full bg-black flex flex-col">
-      <div className="flex-1 relative">
-        {/* Main video display */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-2 h-full">
-          {/* Show local video if host or co-host */}
-          {(role === "host" || role === "cohost") && (
-            <div className="relative bg-gray-800 rounded overflow-hidden w-full h-64">
-              <LocalUser
-                audioTrack={localMicrophoneTrack}
-                cameraOn={cameraOn}
-                micOn={micOn}
-                videoTrack={localCameraTrack}
-                className="w-full h-full object-cover"
-              >
-                <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-md text-sm">
-                  You ({role})
-                </div>
-              </LocalUser>
-            </div>
-          )}
-          
-          {/* Show remote users */}
-          {remoteUsers.map((user) => (
-            <div key={user.uid} className="relative bg-gray-800 rounded overflow-hidden w-full h-64">
-              <RemoteUser
-                user={user}
-                className="w-full h-full object-cover"
-              >
-                <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-md text-sm">
-                  User {user.uid}
-                </div>
-              </RemoteUser>
-            </div>
-          ))}
-          
-          {/* Placeholder if no streams */}
-          {role === "audience" && remoteUsers.length === 0 && (
-            <div className="flex items-center justify-center bg-gray-800 rounded w-full h-64">
-              <p className="text-white">Waiting for host to start the stream...</p>
-            </div>
-          )}
+    <div className="relative h-full w-full bg-black text-white">
+      {/* Host view: local stream */}
+      {role === "host" && (
+        <div className="h-full w-full relative">
+          <div id="local-player" className="h-full w-full" />
+
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+            <button
+              onClick={toggleMic}
+              className={`p-3 rounded-full ${micOn ? "bg-gray-700" : "bg-red-500"}`}
+            >
+              {micOn ? <FaMicrophone /> : <FaMicrophoneSlash />}
+            </button>
+            <button
+              onClick={toggleCamera}
+              className={`p-3 rounded-full ${cameraOn ? "bg-gray-700" : "bg-red-500"}`}
+            >
+              {cameraOn ? <FaVideo /> : <FaVideoSlash />}
+            </button>
+          </div>
         </div>
-      </div>
-      
-      {/* Controls for host/co-host */}
-      {(role === "host" || role === "cohost") && (
-        <div className="bg-gray-900 p-4 flex justify-center space-x-4">
-          <button 
-            onClick={toggleMic}
-            className={`p-3 rounded-full ${micOn ? 'bg-blue-600' : 'bg-red-600'}`}
-          >
-            {micOn ? '🎙️' : '🔇'}
-          </button>
-          <button 
-            onClick={toggleCamera}
-            className={`p-3 rounded-full ${cameraOn ? 'bg-blue-600' : 'bg-red-600'}`}
-          >
-            {cameraOn ? '📹' : '🚫'}
-          </button>
+      )}
+
+      {/* Audience view: show host's remote video */}
+      {role === "audience" && (
+        <div className="h-full w-full flex items-center justify-center">
+          {remoteUsers.length > 0 ? (
+            remoteUsers.map((user) => (
+              <div
+                key={user.uid}
+                id={`remote-player-${user.uid}`}
+                className="w-full h-full"
+              ></div>
+            ))
+          ) : (
+            <p className="text-white">Waiting for host to start streaming...</p>
+          )}
         </div>
       )}
     </div>
   );
-};
-
-export default LiveStream;
+}

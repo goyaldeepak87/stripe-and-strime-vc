@@ -1,194 +1,231 @@
+// app/room/[roomId]/page.js
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useParams} from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import LiveStream from "@/components/LiveStream";
 import Chat from "@/components/Chat";
-import UserControls from "@/components/UserControls";
-import { io } from "socket.io-client";
-import axios from "axios";
+import ReactionButton from "@/components/ReactionButton";
+import ShareRoom from "@/components/ShareRoom";
+import { initSocket, closeSocket, getSocket } from "@/lib/socket";
+import { FaArrowLeft } from "react-icons/fa";
 
-export default function RoomPage({ params }) {
+export default function RoomPage() {
+  const router = useRouter();
+  const params = useParams();
   const searchParams = useSearchParams();
-  const role = searchParams.get("role") || "audience";
-  const {roomId} = useParams();
   
-  const [socket, setSocket] = useState(null);
-  const [token, setToken] = useState(null);
-  const [uid, setUid] = useState(Math.floor(Math.random() * 10000));
+  const roomId = params.roomId;
+  const role = searchParams.get("role") || "audience";
+  
+  const [userId] = useState(Math.floor(Math.random() * 10000));
+  const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
   const [messages, setMessages] = useState([]);
   const [reactions, setReactions] = useState([]);
-  const [viewers, setViewers] = useState(0);
-  const [isConnected, setIsConnected] = useState(false);
-  const [hostUid, setHostUid] = useState(null);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showChat, setShowChat] = useState(false);
 
-  // Generate Agora token
+  // Initialize username from localStorage
   useEffect(() => {
-    const generateToken = async () => {
-      try {
-        const response = await axios.post("http://localhost:4000/api/token", {
-          channelName: roomId,
-          uid,
-          role: role === "audience" ? "audience" : "publisher" // Host and cohost are publishers
-        });
-        setToken(response.data.token);
-      } catch (error) {
-        console.error("Failed to get token:", error);
-      }
-    };
+    const storedUsername = localStorage.getItem("username") || `User-${userId}`;
+    setUsername(storedUsername);
+  }, [userId]);
 
-    generateToken();
-  }, [roomId, uid, role]);
-
-  // Initialize Socket.io connection
+  // Initialize socket connection
   useEffect(() => {
-    const newSocket = io("http://localhost:4000");
-    setSocket(newSocket);
-
-    newSocket.on("connect", () => {
-      console.log("Socket connected");
-      setIsConnected(true);
+    if (!username) return;
+    
+    setIsLoading(true);
+    
+    // Initialize socket connection
+    const socket = initSocket(roomId, username, userId);
+    
+    // Listen for messages
+    socket.on("message", (message) => {
+      setMessages(prev => [...prev, message]);
+    });
+    
+    // Listen for reactions
+    socket.on("reaction", (reaction) => {
+      setReactions(prev => [...prev, reaction]);
       
-      // Join the room
-      newSocket.emit("join-room", {
-        roomId,
-        uid,
-        username: `User-${uid}`,
-        role
-      });
-    });
-
-    newSocket.on("update-viewers", (count) => {
-      setViewers(count);
-    });
-
-    newSocket.on("chat-message", (message) => {
-      setMessages((prev) => [...prev, message]);
-    });
-
-    newSocket.on("reaction", (reaction) => {
-      setReactions((prev) => [...prev, { ...reaction, id: Date.now() }]);
-      
-      // Remove the reaction after 2 seconds
+      // Remove reaction after animation
       setTimeout(() => {
-        setReactions((prev) => prev.filter(r => r.id !== reaction.id));
-      }, 2000);
+        setReactions(prev => prev.filter(r => r.id !== reaction.id));
+      }, 3000);
     });
-
-    newSocket.on("host-connected", (hostId) => {
-      setHostUid(hostId);
+    
+    // Listen for viewer count updates
+    socket.on("viewerCount", (count) => {
+      setViewerCount(count);
     });
-
-    return () => {
-      if (newSocket) {
-        newSocket.disconnect();
+    
+    // Fetch token from backend
+    const fetchToken = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            channelName: roomId,
+            uid: userId,
+            role: role === "host" ? "publisher" : "audience"
+          }),
+        });
+        
+        const data = await response.json();
+        setToken(data.token);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch token:", error);
+        setIsLoading(false);
       }
     };
-  }, [roomId, uid, role]);
+    
+    fetchToken();
+    
+    // Cleanup on unmount
+    return () => {
+      closeSocket();
+    };
+  }, [roomId, username, userId, role]);
 
   const sendMessage = (text) => {
-    if (!socket || !text.trim()) return;
+    if (!text.trim()) return;
     
-    const message = {
-      roomId,
-      uid,
-      username: `User-${uid}`,
-      text,
-      timestamp: new Date().toISOString()
-    };
-    
-    socket.emit("chat-message", message);
+    try {
+      const socket = getSocket();
+      
+      const message = {
+        id: Date.now(),
+        userId,
+        username,
+        text,
+        timestamp: new Date().toISOString()
+      };
+      
+      socket.emit("message", { roomId, message });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
 
   const sendReaction = (type) => {
-    if (!socket) return;
-    
-    const reaction = {
-      roomId,
-      uid,
-      type,
-      position: {
-        x: Math.random() * 80 + 10, // Random position between 10% and 90%
-        y: Math.random() * 40 + 50  // Random position between 50% and 90%
-      }
-    };
-    
-    socket.emit("reaction", reaction);
+    try {
+      const socket = getSocket();
+      
+      const reaction = {
+        id: Date.now(),
+        userId,
+        username,
+        type,
+        timestamp: new Date().toISOString()
+      };
+      
+      socket.emit("reaction", { roomId, reaction });
+    } catch (error) {
+      console.error("Failed to send reaction:", error);
+    }
   };
 
-  const shareRoom = (joinRole = "audience") => {
-    const url = `${window.location.origin}/room/${roomId}?role=${joinRole}`;
-    navigator.clipboard.writeText(url)
-      .then(() => alert("Link copied to clipboard!"))
-      .catch(err => console.error("Failed to copy link:", err));
+  const handleBack = () => {
+    router.push("/");
+  };
+
+  const toggleChat = () => {
+    setShowChat(!showChat);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <header className="bg-white shadow p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">Room: {roomId}</h1>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-600">{viewers} viewers</span>
-          {(role === "host" || role === "cohost") && (
-            <button 
-              onClick={() => shareRoom("cohost")} 
-              className="px-3 py-1 bg-purple-600 text-white rounded text-sm"
-            >
-              Invite Co-host
-            </button>
-          )}
-          <button 
-            onClick={() => shareRoom("audience")} 
-            className="px-3 py-1 bg-blue-600 text-white rounded text-sm"
-          >
-            Share
-          </button>
-        </div>
-      </header>
-      
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-3/4 flex flex-col">
-          <div className="flex-1 relative">
-            <LiveStream 
-              appId={process.env.NEXT_PUBLIC_AGORA_APP_ID || "your-agora-app-id"} 
-              channel={roomId} 
-              token={token} 
-              uid={uid} 
-              role={role}
-            />
-            
-            <div className="absolute inset-0 pointer-events-none">
-              {reactions.map((reaction) => (
-                <div 
-                  key={reaction.id} 
-                  className="absolute animate-float text-2xl"
-                  style={{ 
-                    left: `${reaction.position.x}%`, 
-                    bottom: `${reaction.position.y}%` 
-                  }}
-                >
-                  {reaction.type === "heart" ? "❤️" : 
-                   reaction.type === "like" ? "👍" : 
-                   reaction.type === "laugh" ? "😂" : "👏"}
-                </div>
-              ))}
-            </div>
+    <div className="h-screen flex flex-col bg-gray-900">
+      {/* Top bar */}
+      <div className="flex items-center justify-between p-4 bg-gray-800 text-white">
+        <button onClick={handleBack} className="text-white">
+          <FaArrowLeft />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full bg-red-500 mr-1"></div>
+            <span className="text-sm">LIVE</span>
           </div>
-          
-          {(role === "host" || role === "cohost") && (
-            <UserControls 
-              socket={socket} 
-              roomId={roomId} 
-            />
-          )}
+          <div className="text-sm">{viewerCount} viewing</div>
+        </div>
+        {role === "host" && <ShareRoom roomId={roomId} />}
+      </div>
+      
+      {/* Main content */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* Video stream */}
+        <LiveStream
+          roomId={roomId}
+          token={token}
+          userId={userId}
+          role={role}
+          isLoading={isLoading}
+        />
+        
+        {/* Reactions overlay */}
+        <div className="absolute inset-0 pointer-events-none">
+          {reactions.map((reaction) => (
+            <div 
+              key={reaction.id}
+              className="absolute animate-float"
+              style={{
+                left: `${Math.random() * 80 + 10}%`,
+                bottom: '20%'
+              }}
+            >
+              <span className="text-4xl">{reaction.type}</span>
+            </div>
+          ))}
         </div>
         
-        <div className="w-1/4 border-l border-gray-300 flex flex-col bg-white">
+        {/* Chat panel (mobile) */}
+        <div className={`absolute inset-0 bg-black bg-opacity-50 transition-transform duration-300 transform ${showChat ? 'translate-y-0' : 'translate-y-full'} lg:hidden`}>
+          <div className="h-full flex flex-col">
+            <div className="p-2 text-white flex justify-between items-center">
+              <span>Comments</span>
+              <button onClick={toggleChat} className="text-white">Close</button>
+            </div>
+            <div className="flex-1 overflow-y-auto bg-gray-900 bg-opacity-90">
+              <Chat 
+                messages={messages}
+                username={username}
+                onSendMessage={sendMessage}
+              />
+            </div>
+          </div>
+        </div>
+        
+        {/* Desktop chat panel */}
+        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-80 bg-gray-900 bg-opacity-90">
           <Chat 
-            messages={messages} 
-            sendMessage={sendMessage} 
-            sendReaction={sendReaction} 
+            messages={messages}
+            username={username}
+            onSendMessage={sendMessage}
           />
+        </div>
+      </div>
+      
+      {/* Bottom controls */}
+      <div className="p-4 bg-gray-800 flex justify-between">
+        <button 
+          onClick={toggleChat}
+          className="px-4 py-2 rounded-full bg-gray-700 text-white text-sm lg:hidden"
+        >
+          Comments
+        </button>
+        
+        <div className="flex gap-2">
+          <ReactionButton onSendReaction={() => sendReaction("❤️")}>❤️</ReactionButton>
+          <ReactionButton onSendReaction={() => sendReaction("👍")}>👍</ReactionButton>
+          <ReactionButton onSendReaction={() => sendReaction("🔥")}>🔥</ReactionButton>
+          <ReactionButton onSendReaction={() => sendReaction("👏")}>👏</ReactionButton>
+          <ReactionButton onSendReaction={() => sendReaction("😮")}>😮</ReactionButton>
         </div>
       </div>
     </div>

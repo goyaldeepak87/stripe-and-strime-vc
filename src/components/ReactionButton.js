@@ -1,10 +1,11 @@
-export default function ReactionButton({ emoji, onClick }) {
+// app/components/ReactionButton.js
+export default function ReactionButton({ children, onSendReaction }) {
     return (
-      <button
-        onClick={onClick}
-        className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-lg transition-transform hover:scale-110"
+      <button 
+        onClick={onSendReaction}
+        className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg hover:bg-gray-600 transition"
       >
-        {emoji}
+        {children}
       </button>
     );
   }
