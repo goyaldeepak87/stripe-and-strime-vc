@@ -1,16 +1,26 @@
 // app/page.js
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaVideo, FaEye } from "react-icons/fa";
 import NaveBar from "@/components/NaveBar";
+import { useSelector } from "react-redux";
 
 export default function Home() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [roomId, setRoomId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const { paymentStatus } = useSelector((state) => state.auth);
+
+  // Add useEffect to check payment status and redirect if needed
+  useEffect(() => {
+    // If payment status is not "paid", redirect to home page
+    if (paymentStatus !== "paid") {
+      router.push("/");
+    }
+  }, [paymentStatus, router]);
 
   const handleJoin = () => {
     if (!username.trim()) {
@@ -42,6 +52,12 @@ export default function Home() {
     // Navigate to room as host
     router.push(`/room/${newRoomId}?role=host`);
   };
+
+  // If payment status is not "paid", you can return null or a loading state
+  // This prevents the page content from flashing before redirect happens
+  if (paymentStatus !== "paid") {
+    return null;
+  }
 
   return (
     <div>
@@ -106,7 +122,7 @@ export default function Home() {
 
                 <button
                   onClick={handleJoin}
-                  className="w-full  cursor-pointer bg-orange-500 hover:bg-orange-600  text-white p-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600 transition"
+                  className="w-full cursor-pointer bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600 transition"
                 >
                   <FaEye />
                   <span>Join Stream</span>

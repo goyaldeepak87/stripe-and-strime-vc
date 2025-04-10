@@ -15,7 +15,7 @@ export const getUserProfile = async () => {
         });
         return res.data;
     } catch (error) {
-        console.error("Error fetching user profile:", error.message);
+        // console.error("Error fetching user profile:", error.message);
         throw error; // Rethrow the error for further handling if needed
     }
 }
@@ -30,7 +30,7 @@ export const getpaymentSuccess = async ({sessionId}) => {
         });
         return res.data;
     } catch (error) {
-        console.error("Error fetching payment success:", error.message);
+        // console.error("Error fetching payment success:", error.message);
         throw error; // Rethrow the error for further handling if needed
     }
 }
@@ -46,7 +46,7 @@ export const productPayment = async (cardData) => {
         });
         return res.data;
     } catch (error) {
-        console.error("Error fetching payment:", error.message);
+        // console.error("Error fetching payment:", error.message);
         throw error; // Rethrow the error for further handling if needed
     }
 }

@@ -7,14 +7,15 @@ import { validateLoginForm } from "@/utils/validationSchema";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "@/reudux/slice/authSlice";
 import GifComp from '../GifComp';
+import { toast } from 'react-toastify';
 
 export default function LoginFormModel(props) {
-      const dispatch = useDispatch();
-      const { loading, isAuthenticated } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    const { loading, isAuthenticated } = useSelector((state) => state.auth);
     return (
         <>
             <div className={`${props?.with ? props.with : "w-1/2"} relative p-10`}>
-            {props.with ? <div className='absolute right-[17px] top-[14px] text-[22px] font-black cursor-pointer' onClick={()=>props.setUserLogin(false)}>X</div>:""}
+                {props.with ? <div className='absolute right-[17px] top-[14px] text-[22px] font-black cursor-pointer' onClick={() => props.setUserLogin(false)}>X</div> : ""}
                 <h2 className="text-2xl font-bold text-gray-900">Login</h2>
                 <p className="text-gray-500">
                     Don't have an account?{" "}
@@ -26,9 +27,18 @@ export default function LoginFormModel(props) {
                 <Formik
                     initialValues={{ email: '', password: '' }}
                     validate={validateLoginForm}
-                    onSubmit={(values) => {
-                        dispatch(loginUser(values));
-                        // props.setUserLogin(false)
+                    onSubmit={async (values, { setSubmitting }) => {
+                        try {
+                            const result = await dispatch(loginUser(values)).unwrap();
+                            console.log("result", result)// Use Redux Toolkit's unwrap to handle async
+                            if (result.statusCode === 200) {
+                                toast.success("Login successful! Redirecting...");// Close modal only on successful login
+                                props?.setUserLogin && typeof props.setUserLogin === 'function' && props.setUserLogin(false);
+                            }
+                        } catch (error) {
+                            // console.error("Login failed:", error);
+                            toast.error(error.message); // Handle errors here
+                        }
                     }}
                 >
                     {({

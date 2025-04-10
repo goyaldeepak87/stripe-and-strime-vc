@@ -15,17 +15,16 @@ const LoginForm = () => {
   // Redirect to the home page if the user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      toast.success("Login successful! Redirecting...");
       router.push(RdirectUrlData.Home);// Replace "/home" with your desired route
     }
   }, [isAuthenticated, router]);
 
   // Show error message if login fails
-  useEffect(() => {
-    if (error) {
-      toast.error(error.message);
-    }
-  }, [error]);
+  // useEffect(() => {
+  //   if (error) {
+  //     toast.error(error.message);
+  //   }
+  // }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0d1b2a] to-[#1b263b]">

@@ -9,10 +9,8 @@ import LoginFormModel from './auth/LoginFormModel';
 import { productPayment } from '@/utils/APIs';
 
 export default function CardCompUI({ setUserLogin, ...values }) {
-    const { isAuthenticated, user } = useSelector((state) => state.auth);
-    const uuId = user?.data?.result?.user?.guestUser?.uuid
-    console.log("User==>",)
-
+    const { isAuthenticated, user,paymentStatus } = useSelector((state) => state.auth);
+    const uuId = user?.data?.result?.user?.guestUser?.uuid;
     // const makePayment = async (e) => {
     //     console.log("Make Payment", values)
     //     const cardData = {
@@ -70,7 +68,6 @@ export default function CardCompUI({ setUserLogin, ...values }) {
             const result = await stripe.redirectToCheckout({
                 sessionId: session.id,
             });
-
             if (result.error) {
                 console.error("Stripe Checkout Error:", result.error.message);
             }
@@ -103,7 +100,7 @@ export default function CardCompUI({ setUserLogin, ...values }) {
                         disabled={values.active}
                         className={`mt-4 ${!values.active ? "cursor-pointer" : "cursor-no-drop"} ${!values.active ? "bg-orange-500" : "bg-customOrange"} hover:bg-orange-600 text-white w-full py-2 rounded-lg transition duration-300 shadow-md`}
                     >
-                        {!values.active ? "Add to Cart" : "Not Available"}
+                        {!values.active ? <>{paymentStatus=="paid"? "Already Paid":"Add to Cart"}</> : "Not Available"}
                     </button>
                 </div>
             </div>
