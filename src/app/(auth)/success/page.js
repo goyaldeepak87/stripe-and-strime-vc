@@ -18,14 +18,13 @@ export default function page() {
   
   (function () {
     setTimeout(() => {
-      window.location.href = "/"
+      window.location.href = "/create-channel"
     }, 2000)
   })();
 
   const checkPaymentSuccess = async () => {
     const result = await getpaymentSuccess({ sessionId })
       .then((result) => {
-        console.log("sessionId==>", result?.statusCode)
         if (result?.statusCode === 200) {
           if (result?.data?.result?.payment_status === "completed") {
             dispatch(updatePaymentStatus("paid"));
