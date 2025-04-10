@@ -5,10 +5,6 @@ import React from 'react'
 import UserMenu from './UserMenu';
 
 export default function NaveBar() {
-
-
-
-
     return (
         <div>
             <nav className="bg-gray-800">

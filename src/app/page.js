@@ -24,7 +24,7 @@ export default function Home() {
     localStorage.setItem("username", username);
     
     // Navigate to room as audience
-    router.push(`/room/${roomId}?role=audience`);
+    router.push(`/room/${roomId}?role=host`);
   };
 
   const handleCreateRoom = () => {

@@ -25,16 +25,18 @@ export default function ShareRoom({ roomId }) {
 
   return (
     <div className="relative">
-      <button onClick={toggleShareModal} className="text-white">
+      {/* <button onClick={toggleShareModal} className="text-white">
         <FaShare />
-      </button>
+      </button> */}
       
-      {showShareModal && (
-        <div className="absolute right-0 top-10 w-72 bg-white rounded-lg shadow-lg p-4 z-50">
-          <h3 className="font-semibold mb-3">Share this room</h3>
+      {/* {showShareModal && ( */}
+        <div className=" rounded-lg shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold pr-4 pt-5">Share this room</h2>
+          {/* <h3 className="font-semibold mb-3">Share this room</h3> */}
           
           <div className="space-y-3">
-            <div>
+            {/* <div>
               <div className="text-sm text-gray-500 mb-1">Join as co-host</div>
               <div className="flex items-center gap-2">
                 <input
@@ -50,16 +52,17 @@ export default function ShareRoom({ roomId }) {
                   {copied ? <FaCheck /> : <FaCopy />}
                 </button>
               </div>
-            </div>
+            </div> */}
             
             <div>
-              <div className="text-sm text-gray-500 mb-1">Join as audience</div>
+              <div className="text-sm pb-2">Join as audience</div>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   readOnly
                   value={getShareUrl("audience")}
-                  className="flex-1 bg-gray-100 p-2 rounded text-sm"
+                  className="bg-[rgba(48,51,65,0.7)] whitespace-nowrap truncate flex-1 bg-gray-100 p-2 rounded text-sm"
+                  style={{ background: "rgb(48 51 65 / 70%)" }}
                 />
                 <button
                   onClick={() => copyToClipboard(getShareUrl("audience"))}
@@ -70,17 +73,18 @@ export default function ShareRoom({ roomId }) {
               </div>
             </div>
           </div>
+          </div>
           
-          <div className="mt-3 text-right">
+          {/* <div className="mt-3 text-right">
             <button
               onClick={toggleShareModal}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
               Close
             </button>
-          </div>
+          </div> */}
         </div>
-      )}
+      {/* )} */}
     </div>
   );
 }

@@ -52,3 +52,28 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #555;
 }
+
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(-100px) scale(1.1) rotate(10deg);
+  }
+  60% {
+    transform: translateY(-200px) scale(1) rotate(-10deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-350px) scale(0.9) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 3s linear forwards;
+  pointer-events: none; /* makes them unclickable */
+  will-change: transform, opacity;
+}

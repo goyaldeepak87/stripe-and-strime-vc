@@ -51,7 +51,7 @@ export default function Chat({ messages, username, onSendMessage }) {
         <div ref={messagesEndRef} />
       </div>
       
-      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-700 bg-gray-800 flex gap-2">
+      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-700 bg-gray-800 flex gap-2 items-center">
         <input
           type="text"
           value={message}
@@ -62,7 +62,7 @@ export default function Chat({ messages, username, onSendMessage }) {
         <button 
           type="submit"
           disabled={!message.trim()}
-          className="bg-blue-500 text-white rounded-full p-2 disabled:opacity-50"
+          className="bg-blue-500 text-white rounded-full p-2 disabled:opacity-50 cursor-pointer w-[34px] h-[34px]"
         >
           <FaPaperPlane />
         </button>
