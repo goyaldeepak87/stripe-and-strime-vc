@@ -39,9 +39,8 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
   const [hostActive, setHostActive] = useState(false);
   const [hostMuted, setHostMuted] = useState(false);
   const [hostVideoOff, setHostVideoOff] = useState(false);
-  // Track different tracks separately to fix the issue
-  const [hostHasPublishedAudio, setHostHasPublishedAudio] = useState(false);
-  const [hostHasPublishedVideo, setHostHasPublishedVideo] = useState(false);
+  // Track if host has published any tracks at all
+  const [hostHasPublished, setHostHasPublished] = useState(false);
 
   const localPlayerRef = useRef(null);
   const remotePlayersRef = useRef({});
@@ -79,11 +78,6 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
       setHostMuted(!audioEnabled);
       setHostVideoOff(!videoEnabled);
     });
-
-    // Request initial host media status when audience joins
-    if (role === "audience") {
-      socket.emit("requestHostMediaStatus", { roomId });
-    }
 
     if (role === "host") {
       socket.emit("requestUserList", { roomId });
@@ -154,8 +148,7 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
     // If this was the host and you're audience, mark host as inactive
     if (role === "audience" && user.uid === getHostUid()) {
       setHostActive(false);
-      setHostHasPublishedAudio(false);
-      setHostHasPublishedVideo(false);
+      setHostHasPublished(false);
     }
   };
 
@@ -171,17 +164,10 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
       return prev;
     });
 
-    // Mark host as active if audience and update specific track availability
+    // Mark host as active if audience
     if (role === "audience") {
       setHostActive(true);
-      
-      if (mediaType === "audio") {
-        setHostHasPublishedAudio(true);
-        setHostMuted(false); // Reset muted state when audio is published
-      } else if (mediaType === "video") {
-        setHostHasPublishedVideo(true);
-        setHostVideoOff(false); // Reset video off state when video is published
-      }
+      setHostHasPublished(true);
     }
 
     if (mediaType === "video" && allowAudienceVideo) {
@@ -203,10 +189,8 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
     if (role === "audience") {
       if (mediaType === "audio") {
         setHostMuted(true);
-        // Don't set hostHasPublishedAudio to false, as we still want to show the stream
       } else if (mediaType === "video") {
         setHostVideoOff(true);
-        // Don't set hostHasPublishedVideo to false, we want to show placeholder
       }
     }
     
@@ -359,9 +343,6 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
     );
   }
 
-  // Important change: Consider host active if either audio or video has been published
-  const isHostStreamActive = hostHasPublishedAudio || hostHasPublishedVideo;
-
   return (
     <div className="relative h-full w-full bg-black text-white">
       {/* Viewer Count & User List */}
@@ -379,7 +360,7 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
         <div className="absolute top-16 left-4 bg-gray-900 bg-opacity-90 p-4 rounded max-h-64 overflow-y-auto w-64 z-10">
           <div className="text-sm font-medium mb-2">Connected Users</div>
           <ul className="space-y-2 text-xs">
-            {users.map((user) => (
+            {connectedUsers.map((user) => (
               <li key={user.userId} className="flex justify-between items-center">
                 <span>{user.username} ({user.role})</span>
                 {user.role !== "host" && role === "host" && (
@@ -395,7 +376,7 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
 
       {/* Host media status indicator for audience */}
       {role === "audience" && hostActive && (
-        <div className="absolute top-4 right-4 bg-gray-800 bg-opacity-80 px-3 py-2 rounded z-10 flex items-center gap-2 top-[9px]">
+        <div className="absolute top-4 right-4 bg-gray-800 bg-opacity-80 px-3 py-2 rounded z-10 flex items-center gap-2">
           {hostMuted && <FaMicrophoneSlash className="text-red-500" title="Host muted" />}
           {hostVideoOff && <FaVideoSlash className="text-red-500" title="Host video off" />}
         </div>
@@ -416,7 +397,7 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
             <div ref={localPlayerRef} className="w-full h-full">
               {!cameraOn && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                  <div className="text-center -ml-[335px]">
+                  <div className="text-center">
                     <FaVideoSlash className="mx-auto text-4xl mb-2" />
                     <p>Camera is off</p>
                   </div>
@@ -430,7 +411,7 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
       {/* Remote video (audience) */}
       {role === "audience" && (
         <div className="h-full w-full">
-          {isHostStreamActive ? (
+          {hostHasPublished ? (
             remoteUsers.map((user) => (
               <div key={user.uid} className="relative h-full w-full">
                 {/* Video container always shows, even when host video is off */}
@@ -442,7 +423,7 @@ export default function LiveStream({ roomId, token, userId, role, isLoading, vie
                 {/* Show placeholder when host video is off */}
                 {hostVideoOff && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                    <div className="text-center -ml-[335px]">
+                    <div className="text-center">
                       <FaVideoSlash className="mx-auto text-4xl mb-2" />
                       <p>Host's camera is turned off</p>
                     </div>

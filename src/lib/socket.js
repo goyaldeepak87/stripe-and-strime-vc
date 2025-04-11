@@ -37,6 +37,11 @@ export function initSocket(roomId, username, userId, role = 'audience') {
         role 
       }
     });
+    
+    // If audience, request current host media status
+    if (role === 'audience') {
+      socket.emit('requestHostMediaStatus', { roomId });
+    }
   });
 
   // Handle connection errors
