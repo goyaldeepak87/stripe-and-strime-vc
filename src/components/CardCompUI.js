@@ -7,9 +7,12 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useSelector } from 'react-redux';
 import LoginFormModel from './auth/LoginFormModel';
 import { productPayment } from '@/utils/APIs';
+import { useRouter } from 'next/navigation';
+import { RdirectUrlData } from '@/lang/RdirectUrl';
 
 export default function CardCompUI({ setUserLogin, ...values }) {
-    const { isAuthenticated, user,paymentStatus } = useSelector((state) => state.auth);
+    const router = useRouter();
+    const { isAuthenticated, user, paymentStatus } = useSelector((state) => state.auth);
     const uuId = user?.data?.result?.user?.guestUser?.uuid;
     // const makePayment = async (e) => {
     //     console.log("Make Payment", values)
@@ -94,13 +97,32 @@ export default function CardCompUI({ setUserLogin, ...values }) {
                     </p>
                     <p className="text-2xl font-bold mt-4">${values.price}</p>
                     <button
-                        onClick={() =>
-                        (isAuthenticated ? makePayment(values) : setUserLogin(true)
-                        )}
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                // User not logged in, show login modal
+                                setUserLogin(true);
+                            } else if (paymentStatus === "paid") {
+                                // User logged in and has paid, redirect to create-channel
+                                router.push(RdirectUrlData.CREATECHANNEL);
+                            } else {
+                                // User logged in but hasn't paid, process payment
+                                makePayment(values);
+                            }
+                        }}
                         disabled={values.active}
-                        className={`mt-4 ${!values.active ? "cursor-pointer" : "cursor-no-drop"} ${!values.active ? "bg-orange-500" : "bg-customOrange"} hover:bg-orange-600 text-white w-full py-2 rounded-lg transition duration-300 shadow-md`}
+                        className={`mt-4 ${!values?.active ? "cursor-pointer" : "cursor-no-drop"} ${!values?.active ? "bg-orange-500" : "bg-customOrange"} hover:bg-orange-600 text-white w-full py-2 rounded-lg transition duration-300 shadow-md`}
                     >
-                        {!values.active ? <>{paymentStatus=="paid"? "Already Paid":"Add to Cart"}</> : "Not Available"}
+                        {!values.active ? (
+                            <>
+                                {!isAuthenticated
+                                    ? "Login to Continue"
+                                    : paymentStatus === "paid"
+                                        ? "Go to Channel"
+                                        : "Add to Cart"}
+                            </>
+                        ) : (
+                            "Not Available"
+                        )}
                     </button>
                 </div>
             </div>

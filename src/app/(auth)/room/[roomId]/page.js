@@ -8,6 +8,7 @@ import ReactionButton from "@/components/ReactionButton";
 import ShareRoom from "@/components/ShareRoom";
 import { initSocket, closeSocket, getSocket } from "@/lib/socket";
 import { FaArrowLeft } from "react-icons/fa";
+import { RdirectUrlData } from "@/lang/RdirectUrl";
 
 export default function RoomPage() {
   const router = useRouter();
@@ -17,7 +18,6 @@ export default function RoomPage() {
   const roomId = params.roomId;
   const role = searchParams.get("role") || "audience";
 
-  console.log("rdfsdfs", role)
   const [userId] = useState(Math.floor(Math.random() * 10000));
   const [username, setUsername] = useState("");
   const [token, setToken] = useState("");
@@ -76,7 +76,8 @@ export default function RoomPage() {
     // Listen for being kicked from room
     socket.on("kickedFromRoom", () => {
       alert("You have been removed from this room by the host");
-      router.push("/");
+      router.push(RdirectUrlData.Home);
+      
     });
 
     // Fetch token from backend
@@ -160,7 +161,7 @@ export default function RoomPage() {
   };
 
   const handleBack = () => {
-    router.push("/");
+    router.push(RdirectUrlData.Home);
   };
 
   const toggleChat = () => {
@@ -168,7 +169,6 @@ export default function RoomPage() {
     if (showUsers) setShowUsers(false);
   };
 
-  console.log("Connected users:", connectedUsers);
 
   return (
     <div className="bg-gray-900 bg-gray-800 text-white">

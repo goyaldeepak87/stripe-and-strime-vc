@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { FaVideo, FaEye } from "react-icons/fa";
 import NaveBar from "@/components/NaveBar";
 import { useSelector } from "react-redux";
+import { RdirectUrlData } from "@/lang/RdirectUrl";
 
 export default function Home() {
   const router = useRouter();
@@ -18,7 +19,7 @@ export default function Home() {
   useEffect(() => {
     // If payment status is not "paid", redirect to home page
     if (paymentStatus !== "paid") {
-      router.push("/");
+      router.push(RdirectUrlData.Home);
     }
   }, [paymentStatus, router]);
 
@@ -34,8 +35,9 @@ export default function Home() {
     // Store username in localStorage
     localStorage.setItem("username", username);
 
-    // Navigate to room as audience
-    router.push(`/room/${roomId}?role=host`);
+    // Open in a new tab instead of navigating in current tab
+    const url = `${window.location.origin}${RdirectUrlData.ROME}/${roomId}?role=host`;
+    window.open(url, '_blank');
   };
 
   const handleCreateRoom = () => {
@@ -50,7 +52,7 @@ export default function Home() {
     localStorage.setItem("username", username);
 
     // Navigate to room as host
-    router.push(`/room/${newRoomId}?role=host`);
+    router.push(`${RdirectUrlData.ROME}/${newRoomId}?role=host`);
   };
 
   // If payment status is not "paid", you can return null or a loading state
@@ -122,7 +124,7 @@ export default function Home() {
 
                 <button
                   onClick={handleJoin}
-                  className="w-full cursor-pointer bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-600 transition"
+                  className="w-full cursor-pointer bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg flex items-center justify-center gap-2 transition"
                 >
                   <FaEye />
                   <span>Join Stream</span>
