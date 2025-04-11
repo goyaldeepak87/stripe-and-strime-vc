@@ -12,19 +12,19 @@ const LoginForm = () => {
   const router = useRouter(); // Initialize the router
   const { isAuthenticated, error } = useSelector((state) => state.auth);
 
-  // Redirect to the home page if the user is authenticated
+  // Redirect to home page if user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(RdirectUrlData.Home);// Replace "/home" with your desired route
+      router.push(RdirectUrlData.Home);
     }
   }, [isAuthenticated, router]);
 
-  // Show error message if login fails
-  // useEffect(() => {
-  //   if (error) {
-  //     toast.error(error.message);
-  //   }
-  // }, [error]);
+  // If user is already authenticated, don't render the login form
+  if (isAuthenticated) {
+    return null; // Return nothing while redirecting to prevent flash of login form
+  }
+
+  // Only render the login form if user is not authenticated
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#0d1b2a] to-[#1b263b]">
