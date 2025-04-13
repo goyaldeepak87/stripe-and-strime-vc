@@ -71,25 +71,32 @@ export default function LoginFormModel(props) {
                 }) => (
                     <Form className="mt-6">
                         {/* Role Dropdown */}
-                        <div className="mt-4">
-                            <label htmlFor="role" className="block text-gray-700 font-medium mb-2">
-                                Role As
-                            </label>
-                            <select
-                                name="role"
-                                value={values.role}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                className="w-full border border-gray-300 rounded-lg px-3 py-3 mb-2"
-                            >
-                                <option value="" label="Select role" />
-                                <option value="host" label="Host" />
-                                <option value="audience" label="Audience" />
-                            </select>
-                            {errors.role && touched.role && (
-                                <div className="text-red-500 text-sm mt-1">{errors.role}</div>
-                            )}
-                        </div>
+                        <div className="mt-4 relative">
+    <label htmlFor="role" className="block text-gray-700 font-medium mb-2">
+        Role As
+    </label>
+    <div className="relative">
+        <select
+            name="role"
+            value={values.role}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            className="w-full border rounded-lg p-[10px] border border-black mb-2 appearance-none"
+        >
+            <option value="" label="Select role" />
+            <option value="host" label="Host" />
+            <option value="audience" label="Audience" />
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 top-[-5px] right-[9px] flex items-center px-2 text-gray-700">
+            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+            </svg>
+        </div>
+    </div>
+    {errors.role && touched.role && (
+        <div className="absolute text-[12px] text-red-500 top-[74px]">{errors.role}</div>
+    )}
+</div>
 
                         {/* Email Field */}
                         <div>

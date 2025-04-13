@@ -9,11 +9,11 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
   // console.log("meetings==>", meetings[1].hasPayment)
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 7;
   const router = useRouter();
   const { isAuthenticated, user, paymentStatus } = useSelector((state) => state.auth);
   const uuId = user?.data?.result?.user?.guestUser?.uuid;
-  
+
   // Memoize pagination calculations
   const { currentMeetings, totalPages, indexOfFirstItem, indexOfLastItem } = useMemo(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
@@ -45,18 +45,18 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
   // Handle joining a meeting
   const handleJoinMeeting = useCallback((meeting) => {
     localStorage.setItem("currentRoomId", meeting.roomId);
-    
+
     if (isAuthenticated) {
       if (type === "mybooking") {
         makePayment(meeting);
       } else if (paymentStatus === "paid") {
         // router.push(`/room/${meeting.roomId}?role=${type}`);
         const url = `${window.location.origin}${RdirectUrlData.ROME}/${meeting.roomId}?role=${type}`;
-              window.open(url, '_blank');
-      }else{
+        window.open(url, '_blank');
+      } else {
         // router.push(`/room/${meeting.roomId}?role=${type}`);
         const url = `${window.location.origin}${RdirectUrlData.ROME}/${meeting.roomId}?role=${type}`;
-              window.open(url, '_blank');
+        window.open(url, '_blank');
       }
     } else {
       setUserLogin?.(true);
@@ -81,15 +81,15 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
       };
 
       const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
-      
+
       // Call payment API
       const session = await productPayment(cardData);
-      
+
       // Redirect to checkout
       const result = await stripe.redirectToCheckout({
         sessionId: session.id,
       });
-      
+
       if (result.error) {
         console.error("Stripe Checkout Error:", result.error.message);
       }
@@ -99,10 +99,10 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
   }, [uuId]);
 
   // Page navigation
-  const goToPrevPage = useCallback(() => 
+  const goToPrevPage = useCallback(() =>
     setCurrentPage(prev => Math.max(prev - 1, 1)), []);
-    
-  const goToNextPage = useCallback(() => 
+
+  const goToNextPage = useCallback(() =>
     setCurrentPage(prev => Math.min(prev + 1, totalPages)), [totalPages]);
 
   // Username extraction helper
@@ -124,7 +124,7 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
   }
 
   return (
-    <div className="w-full bg-white shadow-md rounded-lg overflow-hidden relative" style={{height:"100%"}}>
+    <div className="w-full bg-white shadow-md rounded-lg overflow-hidden relative" style={{ height: "100%" }}>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-800">
@@ -137,10 +137,10 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {currentMeetings.map((meeting) => (
+            {currentMeetings.map((meeting, index) => (
               <tr key={meeting.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {meeting.id}
+                  {index + 1}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {meeting.title}
@@ -160,10 +160,10 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
                     onClick={() => handleJoinMeeting(meeting)}
-                    disabled={type=="host" ? !meeting?.hasPayment:""}
+                    disabled={type == "host" ? !meeting?.hasPayment : ""}
                     className="w-[100px] cursor-pointer inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    {type === "mybooking" ? "Pay Now" : (type === "audience" ? "Join now" : (meeting?.hasPayment === true ? "Join Meeting" :"Pending"))}
+                    {type === "mybooking" ? "Pay Now" : (type === "audience" ? "Join now" : (meeting?.hasPayment === true ? "Join Meeting" : "Pending"))}
                   </button>
                 </td>
               </tr>
@@ -215,24 +215,23 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
 
                 {/* Show only a limited number of pages for better performance */}
                 {Array.from(
-                  { length: Math.min(5, totalPages) }, 
+                  { length: Math.min(5, totalPages) },
                   (_, i) => {
                     // Logic to show current page and nearby pages
-                    const pageNum = currentPage <= 3 ? 
-                      i + 1 : 
-                      currentPage + i - 2 > totalPages ? 
-                        totalPages - 4 + i : 
+                    const pageNum = currentPage <= 3 ?
+                      i + 1 :
+                      currentPage + i - 2 > totalPages ?
+                        totalPages - 4 + i :
                         currentPage + i - 2;
-                    
+
                     return pageNum > 0 && pageNum <= totalPages ? (
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                          currentPage === pageNum ? 
-                            'z-10 bg-orange-500 hover:bg-orange-600 text-white' : 
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === pageNum ?
+                            'z-10 bg-orange-500 hover:bg-orange-600 text-white' :
                             'bg-orange-500 hover:bg-orange-600 text-white'
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </button>

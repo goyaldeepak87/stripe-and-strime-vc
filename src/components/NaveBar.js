@@ -4,17 +4,22 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import UserMenu from './UserMenu';
 import { RdirectUrlData } from '@/lang/RdirectUrl';
+import { useSelector } from 'react-redux';
 
 export default function NavBar() {
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
+    const isHost = user && user.data?.result?.user?.guestUser?.role ;
+    console.log(isHost)
     const navLinks = [
         { name: 'Explore Sessions', href: RdirectUrlData.Home },
         { name: 'Team', href: '#' },
         { name: 'Projects', href: '#' },
-        { name: 'My Created Sessions', href: '/create-session' },
-        { name: 'My Bookings', href: "/my-bookings" },
+        // { name: 'My Created Sessions', href: '/create-session' },
+        ...(isHost === "host"  ? [{ name: 'My Created Sessions', href: "/create-session" }] : [] ),
+        // { name: 'My Bookings', href: "/my-bookings" },
+        ...(isHost == "audience" ? [{ name: 'My Bookings', href: "/my-bookings" }]: [] ),
     ];
 
     const toggleMobileMenu = () => {

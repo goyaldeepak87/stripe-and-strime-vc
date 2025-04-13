@@ -26,8 +26,9 @@ export default function page() {
     const result = await getpaymentSuccess({ sessionId })
       .then((result) => {
         if (result?.statusCode === 200) {
-          if (result?.data?.result?.payment_status === "completed") {
+          if (result?.data?.result?.payment_status === "paid") {
             dispatch(updatePaymentStatus("paid"));
+                window.location.href = "/my-bookings"
           }
         }
         // console.log("dtaa==>", result)
