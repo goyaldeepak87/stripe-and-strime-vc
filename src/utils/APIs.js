@@ -5,20 +5,20 @@ import { API_BASE_URL } from "@/config/appBaseUrl";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
 const SERVER_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export const getUserProfile = async () => {
-    try {
-        const res = await axios.get(`${API_BASE_URL}/user/api/user_list`, {
-            headers: {
-                ...await DefaultHeader(),
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        });
-        return res.data;
-    } catch (error) {
-        // console.error("Error fetching user profile:", error.message);
-        throw error; // Rethrow the error for further handling if needed
-    }
-}
+// export const getUserProfile = async () => {
+//     try {
+//         const res = await axios.get(`${API_BASE_URL}/user/api/user_list`, {
+//             headers: {
+//                 ...await DefaultHeader(),
+//                 Authorization: `Bearer ${localStorage.getItem("token")}`,
+//             },
+//         });
+//         return res.data;
+//     } catch (error) {
+//         // console.error("Error fetching user profile:", error.message);
+//         throw error; // Rethrow the error for further handling if needed
+//     }
+// }
 
 export const getpaymentSuccess = async ({sessionId}) => {
     try {

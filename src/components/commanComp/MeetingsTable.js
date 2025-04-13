@@ -117,7 +117,7 @@ export default function MeetingsTable({ meetings = [], type, setUserLogin }) {
     return (
       <div className="w-full bg-white shadow-md rounded-lg overflow-hidden h-full flex items-center justify-center">
         <div className="text-center py-8">
-          <p className="text-gray-500">No meetings scheduled yet.</p>
+          <p className="text-gray-500 text-[40px]">No meetings scheduled yet.</p>
         </div>
       </div>
     );
