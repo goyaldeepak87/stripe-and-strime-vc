@@ -5,24 +5,28 @@ import NaveBar from "@/components/NaveBar";
 import MeetingsTable from "@/components/commanComp/MeetingsTable";
 import LoginFormModel from "@/components/auth/LoginFormModel";
 import { getMyBookedMeetings } from "@/utils/APIs";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { RdirectUrlData } from "@/lang/RdirectUrl";
 
 export default function JoinStreaming() {
+    const router = useRouter();
     const [sessions, setSessions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userLogin, setUserLogin] = useState(false);
-    
+    const { isAuthenticated } = useSelector((state) => state.auth);
 
     const fetchSessions = useCallback(async () => {
         try {
             setLoading(true);
             const token = localStorage.getItem("token");
-            
+
             if (!token) {
                 console.warn("No authentication token found");
                 setSessions([]);
                 return;
             }
-            
+
             const bookedMeetings = await getMyBookedMeetings();
             setSessions(bookedMeetings);
         } catch (error) {
@@ -34,8 +38,16 @@ export default function JoinStreaming() {
     }, []);
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            router.push(`${RdirectUrlData.Home}`);
+            return;
+        }
         fetchSessions();
-    }, [fetchSessions]);
+    }, [fetchSessions, router, isAuthenticated]);
+
+    if (!isAuthenticated) {
+        return <div className="bg-orange-200"></div>
+    }
 
     return (
         <>
@@ -44,21 +56,21 @@ export default function JoinStreaming() {
                     <div className="flex justify-between items-center mb-6 h-[40px]">
                         <h1 className="text-2xl font-bold">My Booked Sessions</h1>
                     </div>
-                    
+
                     {loading ? (
                         <div className="flex justify-center py-16">
                             <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                         </div>
                     ) : (
-                        <MeetingsTable 
-                            setUserLogin={setUserLogin} 
-                            meetings={sessions || []} 
+                        <MeetingsTable
+                            setUserLogin={setUserLogin}
+                            meetings={sessions || []}
                             type="audience"
                         />
                     )}
                 </div>
             </div>
-            
+
             {/* Login Modal - only render when needed */}
             {userLogin && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

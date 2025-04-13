@@ -37,13 +37,13 @@ export default function LoginFormModel(props) {
                     X
                 </div>
             )}
-            <h2 className="text-2xl font-bold text-gray-900">Login</h2>
-            <p className="text-gray-500">
+            <h2 className="text-2xl font-bold text-orange-600">Login</h2>
+            {/* <p className="text-gray-500">
                 Don't have an account?{" "}
                 <a href="#" className="text-orange-600 font-semibold">
                     Sign Up
                 </a>
-            </p>
+            </p> */}
 
             <Formik
                 initialValues={{ email: '', password: '', role: '' }}
@@ -109,16 +109,16 @@ export default function LoginFormModel(props) {
                                 type="password"
                                 placeholder="Enter 6 characters or more"
                             />
-                            <a href="#" className="text-sm text-orange-600 float-right mt-1">
+                            {/* <a href="#" className="text-sm text-orange-600 float-right mt-1">
                                 Forgot Password?
-                            </a>
+                            </a> */}
                         </div>
 
                         {/* Remember Me */}
-                        <div className="flex items-center mt-4">
+                        {/* <div className="flex items-center mt-4">
                             <input type="checkbox" className="mr-2" />
                             <label className="text-gray-700">Remember me</label>
-                        </div>
+                        </div> */}
 
                         {/* Submit Button */}
                         <button

@@ -100,8 +100,16 @@ export default function CreateSession() {
 
     // Load sessions on component mount
     useEffect(() => {
+        if(!isAuthenticated){
+            router.push(`${RdirectUrlData.Home}`); 
+            return; 
+        }
         fetchSessions();
-    }, [fetchSessions]);
+    }, [fetchSessions, router, isAuthenticated]);
+
+    if(!isAuthenticated){
+        return <div className="bg-orange-200"></div>
+    }
 
     return (
         <div>
