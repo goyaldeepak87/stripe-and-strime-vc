@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import NaveBar from "@/components/NaveBar";
 import MeetingsTable from "@/components/commanComp/MeetingsTable";
 import LoginFormModel from "@/components/auth/LoginFormModel";
+import { getMeetings } from "@/utils/APIs";
 
 export default function Home() {
   const [sessions, setSessions] = useState([]);
@@ -11,27 +12,15 @@ export default function Home() {
   const [userLogin, setUserLogin] = useState(false);
   
   // API base URL - could be extracted to environment variable
-  const API_BASE_URL = "http://localhost:4000/v1/user/api";
 
   const fetchSessions = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      
-      // We're fetching public sessions, so token is optional
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      
-      const response = await fetch(`${API_BASE_URL}/meetings`, { headers });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await getMeetings();
       setSessions(data?.data?.meetings || []);
     } catch (error) {
-      console.error("Failed to fetch sessions:", error);
-      // Could show error notification to user
+      console.log("Failed to fetch sessions:", error);
+      // Could show error message to user here
     } finally {
       setLoading(false);
     }

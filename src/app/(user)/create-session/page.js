@@ -9,6 +9,7 @@ import NaveBar from "@/components/NaveBar";
 import { useSelector } from "react-redux";
 import { RdirectUrlData } from "@/lang/RdirectUrl";
 import MeetingsTable from "@/components/commanComp/MeetingsTable";
+import { createSession, getHostSessions } from "@/utils/APIs";
 
 // Validation schema - defined outside component to prevent recreation
 const SessionSchema = Yup.object().shape({
@@ -50,66 +51,37 @@ export default function CreateSession() {
     const fetchSessions = useCallback(async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem("token");
 
-            if (!token) {
-                console.error("No authentication token found");
-                setLoading(false);
+            if (!localStorage.getItem("token")) {
+                console.warn("No authentication token found");
                 return;
             }
 
-            const response = await fetch(`${API_BASE_URL}/host/my_sessions`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            setSessions(data?.data?.meetings || []);
+            const sessionsData = await getHostSessions();
+            setSessions(sessionsData);
         } catch (error) {
             console.error("Failed to fetch sessions:", error);
-            // Optionally show an error toast/notification
+            // Implement error handling - could add toast notification here
         } finally {
             setLoading(false);
         }
     }, []);
 
     // Create a new session
+    // Create a new session
     const handleCreateSession = useCallback(async (values, { resetForm, setSubmitting }) => {
         try {
-            const token = localStorage.getItem("token");
+            await createSession(values);
 
-            if (!token) {
-                console.error("No authentication token found");
-                return;
-            }
-
-            const response = await fetch(`${API_BASE_URL}/host/create_sessions`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify(values)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to create session: ${response.status} ${response.statusText}`);
-            }
-
-            // Success
+            // Success handling
             resetForm();
             setShowCreateModal(false);
             fetchSessions(); // Refresh the list
 
-            // Optionally show success toast/notification
+            // Could add success toast notification here
         } catch (error) {
-            console.error("Failed to create session:", error);
-            // Optionally show an error toast/notification
+            // Could add error toast notification here
+            console.log("Session creation failed:", error);
         } finally {
             setSubmitting(false);
         }
@@ -175,7 +147,7 @@ export default function CreateSession() {
                                     validationSchema={SessionSchema}
                                     onSubmit={handleCreateSession}
                                 >
-                                    {({ errors, touched, isSubmitting, setFieldValue}) => (
+                                    {({ errors, touched, isSubmitting, setFieldValue }) => (
                                         <Form className="space-y-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
