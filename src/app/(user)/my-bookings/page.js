@@ -39,7 +39,6 @@ export default function JoinStreaming() {
 
     return (
         <>
-            <NaveBar />
             <div className="height-table bg-orange-200">
                 <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex justify-between items-center mb-6 h-[40px]">

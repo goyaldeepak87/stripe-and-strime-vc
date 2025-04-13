@@ -141,7 +141,6 @@ export default function Home() {
 
   return (
     <div>
-      <NaveBar />
       <div className="min-h bg-orange-200 min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
           <h1 className="text-2xl font-bold text-center mb-6">Live Stream App</h1>
