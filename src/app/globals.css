@@ -27,6 +27,11 @@ body {
 .min-h{
   min-height: calc(100vh - 64px); 
 }
+.height-table {
+  height: calc(100vh - 64px);
+  padding-bottom: 80px;
+}
+
 .bg-customOrange{
   background: #ff690082;
 }

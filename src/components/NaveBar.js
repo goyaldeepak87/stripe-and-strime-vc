@@ -10,11 +10,11 @@ export default function NavBar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
     const navLinks = [
-        { name: 'Dashboard', href: RdirectUrlData.Home },
+        { name: 'Explore Sessions', href: RdirectUrlData.Home },
         { name: 'Team', href: '#' },
         { name: 'Projects', href: '#' },
-        { name: 'Calendar', href: '#' },
-        { name: 'Live Calls', href: RdirectUrlData.CREATECHANNEL },
+        { name: 'My Created Sessions', href: '/create-session' },
+        { name: 'My Bookings', href: "/my-bookings" },
     ];
 
     const toggleMobileMenu = () => {
