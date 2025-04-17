@@ -16,10 +16,10 @@ export default function NavBar() {
         { name: 'Explore Sessions', href: RdirectUrlData.Home },
         { name: 'Team', href: '#' },
         { name: 'Projects', href: '#' },
-        // { name: 'My Created Sessions', href: '/create-session' },
-        ...(isHost === "host"  ? [{ name: 'My Created Sessions', href: "/create-session" }] : [] ),
-        // { name: 'My Bookings', href: "/my-bookings" },
-        ...(isHost == "audience" ? [{ name: 'My Bookings', href: "/my-bookings" }]: [] ),
+        // { name: 'My Created Sessions', href: href: RdirectUrlData.CREATESESSION },
+        ...(isHost === "host"  ? [{ name: 'My Created Sessions', href: RdirectUrlData.CREATESESSION}] : [] ),
+        // { name: 'My Bookings', href: RdirectUrlData.MYBOOKINGS },
+        ...(isHost == "audience" ? [{ name: 'My Bookings', href: RdirectUrlData.MYBOOKINGS }]: [] ),
     ];
 
     const toggleMobileMenu = () => {

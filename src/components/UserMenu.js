@@ -14,7 +14,6 @@ export default function UserMenu() {
     // Correctly access the auth state
     const { error, user, isAuthenticated } = useSelector((state) => state.auth);
     const userdetails = user && user.data?.result?.user?.guestUser ;
-console.log("userdetails", )
     const toggleMenu = () => {
         setIsMenuOpen((prev) => !prev);
     };
@@ -40,7 +39,7 @@ console.log("userdetails", )
                 onClick={toggleMenu}
             >
                 <span className="sr-only">Open user menu</span>
-                <div className='text-white pr-5'>
+                <div className='text-white pr-5 flex items-center capitalize'>
                     {/* {userdetails?.email?.split("@")?.[0]} <br/> */}
                     {userdetails?.role ? `Role - ${userdetails?.role}` : null}
                 </div>

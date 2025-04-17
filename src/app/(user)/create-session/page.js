@@ -15,10 +15,12 @@ import { createSession, getHostSessions } from "@/utils/APIs";
 const SessionSchema = Yup.object().shape({
     title: Yup.string()
         .required("Title is required")
-        .min(3, "Title must be at least 3 characters"),
+        .min(10, "Title must be at least 10 characters")
+        .max(15, "Title must not exceed 15 characters"),
     description: Yup.string()
         .required("Description is required")
-        .min(10, "Description must be at least 10 characters"),
+        .min(12, "Title must be at least 10 characters")
+        .max(43, "Title must not exceed 15 characters"),
     roomId: Yup.string(),
     scheduledFor: Yup.string(),
     price: Yup.number()
@@ -100,14 +102,14 @@ export default function CreateSession() {
 
     // Load sessions on component mount
     useEffect(() => {
-        if(!isAuthenticated){
-            router.push(`${RdirectUrlData.Home}`); 
-            return; 
+        if (!isAuthenticated) {
+            router.push(`${RdirectUrlData.Home}`);
+            return;
         }
         fetchSessions();
     }, [fetchSessions, router, isAuthenticated]);
 
-    if(!isAuthenticated){
+    if (!isAuthenticated) {
         return <div className="bg-orange-200"></div>
     }
 

@@ -4,4 +4,6 @@ export const RdirectUrlData ={
   SIGNUP:"/signup",
   CREATECHANNEL:"/create-channel",
   ROME:"/room",
+  MYBOOKINGS:"/my-bookings",
+  CREATESESSION: "/create-session"
 }

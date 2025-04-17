@@ -37,7 +37,7 @@ export default function LoginFormModel(props) {
                     X
                 </div>
             )}
-            <h2 className="text-2xl font-bold text-orange-600">Login</h2>
+            <h2 className="text-2xl font-bold text-orange-600">Account Access</h2>
             {/* <p className="text-gray-500">
                 Don't have an account?{" "}
                 <a href="#" className="text-orange-600 font-semibold">
@@ -133,7 +133,7 @@ export default function LoginFormModel(props) {
                             className={`w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg transition duration-300 shadow-md ${loading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                             disabled={loading}
                         >
-                            {loading ? <GifComp {...LoaderData} /> : "LOGIN"}
+                            {loading ? <GifComp {...LoaderData} /> : "AUTHENTICATE"}
                         </button>
                     </Form>
                 )}

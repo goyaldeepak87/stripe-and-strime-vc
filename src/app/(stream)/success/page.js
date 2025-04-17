@@ -3,6 +3,7 @@
 import GifComp from '@/components/GifComp'
 import LoginForm from '@/components/LoginPage'
 import { successPayment } from '@/lang'
+import { RdirectUrlData } from '@/lang/RdirectUrl'
 import { updatePaymentStatus } from '@/reudux/slice/authSlice'
 import { getpaymentSuccess } from '@/utils/APIs'
 import axios from 'axios'
@@ -16,11 +17,11 @@ export default function page() {
   const dispatch = useDispatch();
   const paymentStatus = useSelector((state) => state.auth.paymentStatus);
   
-  (function () {
-    setTimeout(() => {
-      window.location.href = "/my-bookings"
-    }, 2000)
-  })();
+  // (function () {
+  //   setTimeout(() => {
+  //     window.location.href = "/my-bookings"
+  //   }, 2000)
+  // })();
 
   const checkPaymentSuccess = async () => {
     const result = await getpaymentSuccess({ sessionId })
@@ -28,7 +29,7 @@ export default function page() {
         if (result?.statusCode === 200) {
           if (result?.data?.result?.payment_status === "paid") {
             dispatch(updatePaymentStatus("paid"));
-                window.location.href = "/my-bookings"
+                window.location.href = RdirectUrlData.MYBOOKINGS
           }
         }
         // console.log("dtaa==>", result)
